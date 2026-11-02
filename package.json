@@ -1,0 +1,16 @@
+{
+  "name": "smf-site-scripts",
+  "version": "0.1.0",
+  "description": "JS custom du site Social Media Family (Webflow), servi par jsDelivr.",
+  "main": "dist/smf.js",
+  "scripts": {
+    "build": "node build.mjs",
+    "dev": "node build.mjs --watch"
+  },
+  "license": "UNLICENSED",
+  "type": "module",
+  "devDependencies": {
+    "esbuild": "^0.25.12"
+  },
+  "private": true
+}
