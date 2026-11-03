@@ -79,3 +79,8 @@ button{font:inherit;color:inherit}
 .hero_kpis .kpi-pill{box-shadow:0 23px 52px rgba(167,145,127,.1),0 94px 94px rgba(167,145,127,.09),0 211px 127px rgba(167,145,127,.05)}
 /* Bandeau logos clients (#19) : infobulle au survol / focus du « i », ou .is-open (tap mobile, JS data-smf-tooltip). */
 .client-logo_info:hover .client-logo_tooltip,.client-logo_info:focus-visible .client-logo_tooltip,.client-logo_info.is-open .client-logo_tooltip{display:block}
+/* Cartes expertises (#21) : contour gradient-rainbow (1 px, masqué), flèche et voisines à 50 % au survol / focus. */
+.expertise-card::before{content:"";position:absolute;inset:0;z-index:1;padding:var(--_radius-border---border--width-s);background:linear-gradient(135deg,#AEFF00 28%,#FFAA00 50%,#FF0000 71%,#1500FF 93%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;opacity:0;transition:opacity .3s;pointer-events:none}
+.expertise-card:hover::before,.expertise-card:focus-visible::before{opacity:1}
+.expertise-card:hover .expertise-card_arrow,.expertise-card:focus-visible .expertise-card_arrow{display:block}
+.expertise-cards_component:has(.expertise-card:hover) .expertise-card:not(:hover){opacity:.5}
