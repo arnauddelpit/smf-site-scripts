@@ -10,7 +10,8 @@
   "license": "UNLICENSED",
   "type": "module",
   "devDependencies": {
-    "esbuild": "^0.25.12"
+    "esbuild": "^0.25.12",
+    "svgo": "^3.3.2"
   },
   "private": true
 }
