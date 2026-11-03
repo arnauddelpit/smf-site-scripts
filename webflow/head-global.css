@@ -40,7 +40,8 @@ button{font:inherit;color:inherit}
 .tag[aria-pressed="true"]{background-color:var(--_theme---button--dark--bg);border-color:var(--_theme---button--dark--bg);color:var(--_theme---text--on-dark)}
 .tag.w-variant-2f13adeb-02b4-c7eb-3846-d276d7d89a5d[aria-pressed="true"]{background-color:var(--_theme---button--secondary--bg);border-color:var(--_theme---button--outline);color:var(--_theme---button--outline)}
 /* Logo réseau (#4) : pancarte au survol, au focus clavier, ou .is-open (tap mobile, JS data-smf-tooltip) */
-.network-logo:hover .network-logo_tooltip,.network-logo:focus-visible .network-logo_tooltip,.network-logo.is-open .network-logo_tooltip{opacity:1;visibility:visible}
+.network-logo:hover .network-logo_tooltip,.network-logo:focus-visible .network-logo_tooltip,.network-logo.is-open .network-logo_tooltip{display:flex;opacity:1;visibility:visible}
+@starting-style{.network-logo:hover .network-logo_tooltip,.network-logo:focus-visible .network-logo_tooltip,.network-logo.is-open .network-logo_tooltip{opacity:0}}
 .network-logo:hover .network-logo_image{transform:scale(1.05)}
 /* Smuf (#5) : place réservée avant injection du SVG inline par le JS (ratio = viewBox) */
 [data-smf-smuf]{aspect-ratio:1/1}
