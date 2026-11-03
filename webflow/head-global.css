@@ -68,3 +68,10 @@ button{font:inherit;color:inherit}
 .megamenu_lists{grid-template-columns:minmax(0,1fr);row-gap:var(--_spacing---space--8);padding:var(--_spacing---space--4)}
 .megamenu.is-agency{padding:var(--_spacing---space--4);row-gap:var(--_spacing---space--4)}
 }
+/* Bandeau cookies (#15) : masqué par défaut, .is-open posé par smf-consent. Aperçu statique dans la Styleguide. */
+.consent_banner,.consent_modal{display:none}
+.consent_banner.is-open,.consent_modal.is-open{display:flex}
+.consent_category-header{cursor:pointer}
+.consent_checkbox{width:1.25rem;height:1.25rem;margin:0;flex-shrink:0;cursor:pointer;accent-color:var(--_theme---button--dark--bg)}
+.styleguide_content .consent_banner,.styleguide_content .consent_modal{display:flex;position:relative;inset:auto;z-index:auto}
+.styleguide_content .consent_modal{margin-top:var(--_spacing---space--6)}
