@@ -42,6 +42,7 @@ button{font:inherit;color:inherit}
 /* Logo réseau (#4) : pancarte au survol, au focus clavier, ou .is-open (tap mobile, JS data-smf-tooltip) */
 .network-logo:hover .network-logo_tooltip,.network-logo:focus-visible .network-logo_tooltip,.network-logo.is-open .network-logo_tooltip{display:flex;opacity:1;visibility:visible}
 @starting-style{.network-logo:hover .network-logo_tooltip,.network-logo:focus-visible .network-logo_tooltip,.network-logo.is-open .network-logo_tooltip{opacity:0}}
+.network-logo:hover,.network-logo:focus-visible,.network-logo.is-open{z-index:10}
 .network-logo:hover .network-logo_image{transform:scale(1.05)}
 /* Smuf (#5) : place réservée avant injection du SVG inline par le JS (ratio = viewBox) */
 [data-smf-smuf]{aspect-ratio:1/1}
