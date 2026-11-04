@@ -5,11 +5,13 @@
  * [data-smf-card] = carte ; data-smf-tags (liste séparée par des espaces) sur la carte ou son item CMS parent donne ses filtres.
  * Les cartes qui ne correspondent pas se retournent (.is-flipped, le flip 3D est en CSS) avec un léger stagger.
  *
- * Mode game (« Qui est-ce ? ») : pas encore implémenté (voir build-log : indices du jeu non exposés au DOM).
+ * Mode game (« Qui est-ce ? ») : voir team-game.js (chargé à la demande).
  */
-export function init(elements, { env }) {
+export function init(elements, ctx) {
   for (const root of elements) {
-    if (root.getAttribute('data-smf-team') === 'filters') initFilters(root, env);
+    const mode = root.getAttribute('data-smf-team');
+    if (mode === 'filters') initFilters(root, ctx.env);
+    if (mode === 'game') import('./team-game.js').then((mod) => mod.initGame(root, ctx));
   }
 }
 

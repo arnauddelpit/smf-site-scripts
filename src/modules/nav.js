@@ -31,8 +31,39 @@ export function init([nav], { env }) {
     if (panel) t.setAttribute('aria-controls', panel.id);
   }
 
+  // Passage Expertises ↔ Agence : le panneau se transforme (taille et contenu morphés) au lieu de se fermer / rouvrir.
+  function morph(fromPanel, toPanel) {
+    const gsap = window.gsap;
+    fromPanel.classList.remove('is-open');
+    const from = fromPanel.getBoundingClientRect();
+    toPanel.classList.add('is-open');
+    if (!gsap || env.reducedMotion) return;
+    const to = toPanel.getBoundingClientRect();
+    gsap.killTweensOf([toPanel, ...toPanel.children]);
+    gsap.fromTo(
+      toPanel,
+      { height: from.height, width: from.width, overflow: 'hidden' },
+      { height: to.height, width: to.width, duration: 0.4, ease: 'power2.inOut', clearProps: 'height,width,overflow' },
+    );
+    gsap.fromTo(
+      toPanel.children,
+      { opacity: 0, y: 10 },
+      { opacity: 1, y: 0, duration: 0.3, delay: 0.15, stagger: 0.04, ease: 'power3.out', clearProps: 'opacity,transform' },
+    );
+  }
+
   function setOpen(key) {
+    const previous = current;
     current = key;
+    const fromPanel = previous && key && previous !== key ? panelFor(previous) : null;
+    const toPanel = fromPanel && panelFor(key);
+    if (fromPanel && toPanel) {
+      morph(fromPanel, toPanel);
+      for (const t of triggers) t.setAttribute('aria-expanded', String(t.getAttribute('data-smf-nav-trigger') === key));
+      nav.classList.add('is-menu-open');
+      nav.classList.remove('is-hidden');
+      return;
+    }
     for (const p of panels) p.classList.toggle('is-open', p.getAttribute('data-smf-megamenu') === key);
     for (const t of triggers) t.setAttribute('aria-expanded', String(t.getAttribute('data-smf-nav-trigger') === key));
     nav.classList.toggle('is-menu-open', Boolean(key));

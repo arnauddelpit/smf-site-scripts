@@ -1,0 +1,40 @@
+{
+  "_source": "CMS Webflow « Indices du jeu » (21 indices) — export du 2026-11-04. Les membres sont désignés par leur slug (collection Équipe). À régénérer si les indices changent dans le CMS.",
+  "pages": {
+    "agence-ads": [
+      { "text": "Ils connaissent le ROAS par cœur, et pas seulement en réunion.", "out": ["mathias", "axel", "vincent", "valerie", "valentin", "camille"] },
+      { "text": "Ils ont déjà dit « on teste ? » trois fois ce matin.", "out": ["antoine-p", "julie", "lea", "manon", "chloe"] },
+      { "text": "Leur écran affiche plus de courbes que de mèmes. (Enfin, presque.)", "out": ["lucas"] }
+    ],
+    "agence-social-media": [
+      { "text": "Ils savent exactement à quelle heure poster.", "out": ["mathias", "axel", "vincent", "valerie", "valentin", "camille"] },
+      { "text": "Ils parlent aux communautés sans jamais se prendre pour une marque.", "out": ["antoine-g", "juliette", "hugo", "theo"] },
+      { "text": "Ils répondent aux commentaires plus vite que leur ombre.", "out": ["lucas"] }
+    ],
+    "studio-creatif": [
+      { "text": "Ils ont toujours un trépied dans le coffre.", "out": ["mathias", "valerie", "chloe", "theo"] },
+      { "text": "On les reconnaît à leurs écouteurs vissés sur les oreilles.", "out": ["antoine-p", "antoine-g", "juliette", "hugo"] },
+      { "text": "Pour eux, une transition ratée est un drame national.", "out": ["julie", "lea", "manon"] }
+    ],
+    "qui-sommes-nous": [
+      { "text": "Ils ont des jolis chapeaux...", "out": ["axel", "vincent", "valentin", "camille"] },
+      { "text": "Ils sont là depuis le début, ou presque.", "out": ["antoine-g", "julie", "lea", "manon"] },
+      { "text": "Ils font tourner la maison sans qu’on le voie.", "out": ["hugo", "theo", "lucas", "chloe"] }
+    ],
+    "expertises": [
+      { "text": "Ils couvrent un peu de tout (et ils s’en vantent).", "out": ["vincent", "valerie", "camille", "chloe"] },
+      { "text": "Ils ont un avis sur chaque levier du plan média.", "out": ["antoine-p", "juliette", "hugo", "manon"] },
+      { "text": "On les croise à chaque brief, de la stratégie au rendu.", "out": ["julie", "valentin", "lucas", "theo"] }
+    ],
+    "besoins/gagner-en-visibilite": [
+      { "text": "Ils font parler des marques pour qu’on les remarque.", "out": ["antoine-g", "hugo", "theo", "juliette", "valerie"] },
+      { "text": "Leur feed est impeccable, le vôtre le sera aussi.", "out": ["mathias", "axel", "vincent", "valentin"] },
+      { "text": "Ils pensent « portée » avant de penser « publier ».", "out": ["camille", "lucas", "chloe"] }
+    ],
+    "secteurs/e-commerce": [
+      { "text": "Ils savent ce qu’est un panier abandonné.", "out": ["mathias", "valerie", "julie", "manon", "chloe"] },
+      { "text": "Ils lisent leur tableau de bord comme un polar.", "out": ["axel", "vincent", "valentin", "camille"] },
+      { "text": "Ils font rimer ROAS et bonne humeur.", "out": ["antoine-p", "lea", "lucas"] }
+    ]
+  }
+}
