@@ -2,7 +2,15 @@
  * Attend l'intégration GSAP native de Webflow (window.gsap) sans jamais l'importer.
  * Les plugins (ScrollTrigger, SplitText, DrawSVG, MorphSVG, Flip) sont activés dans les réglages du site.
  */
-export function whenGsap({ timeout = 8000, nativeWait = 1500 } = {}) {
+let pending = null;
+
+/** Promesse unique partagée par tous les modules (un seul repli, un seul avertissement). */
+export function whenGsap(options) {
+  pending ||= waitForGsap(options);
+  return pending;
+}
+
+function waitForGsap({ timeout = 12000, nativeWait = 1500 } = {}) {
   return new Promise((resolve, reject) => {
     const started = performance.now();
     let fallbackStarted = false;
