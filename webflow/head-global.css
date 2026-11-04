@@ -95,3 +95,15 @@ button{font:inherit;color:inherit}
 .member-card.is-wrong .member-card_front{outline:var(--_radius-border---border--width-m) solid var(--_palette---color--brand--pink)}
 [data-smf-team="game"] .member-card{cursor:pointer}
 @media (prefers-reduced-motion:reduce){.member-card_inner{transition:none}}
+/* FAQ item (#31) : .is-open posé par le JS data-smf-accordion ; la variante « Ouvert (aperçu) » sert à la Styleguide. */
+.faq-item.is-open .faq-item_answer{display:block}
+.faq-item.is-open .faq-item_icon-line.is-vertical,.faq-item_icon-line.is-vertical.w-variant-d7fcf89c-cbef-b612-ec2c-bee49e84d5a1{transform:rotate(0deg)}
+/* Formulaire contact (#33) : upload natif Webflow (pastille sable pointillée de Figma), selects natifs en embed, états. */
+.contact-form_form .w-file-upload{width:100%}
+.contact-form_form .w-file-upload-label{display:inline-flex;align-items:center;column-gap:var(--_spacing---space--2);padding:var(--_spacing---space--3) var(--_spacing---space--5);border:var(--_radius-border---border--width-s) solid var(--_theme---border--primary);border-radius:var(--_radius-border---radius--full);background-color:var(--_theme---background--tint);font-family:var(--_typography---font--body);font-size:var(--_typography---font-size--text-medium);color:var(--_theme---text--primary);cursor:pointer}
+.contact-form_form .w-file-upload-info{font-size:var(--_typography---font-size--text-tiny);color:var(--_theme---text--secondary)}
+.contact-form_form select.contact-form_input{appearance:auto}
+.contact-form_form .w-embed{width:100%}
+.contact-form_success{display:none}
+.contact-form_success > div{display:flex;flex-direction:column;align-items:flex-start;row-gap:var(--_spacing---space--6)}
+.contact-form_input:user-invalid{border-color:var(--_palette---color--brand--pink)}
