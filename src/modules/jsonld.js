@@ -61,6 +61,14 @@ function faq() {
 
 export function init() {
   const path = location.pathname.replace(/\/+$/, '') || '/';
+
+  // Pages techniques : noindex (le réglage de page Webflow n'est pas exposé à l'API)
+  if (['/trou-noir', '/styleguide'].includes(path) && !document.querySelector('meta[name="robots"]')) {
+    const robots = document.createElement('meta');
+    robots.name = 'robots';
+    robots.content = 'noindex, nofollow';
+    document.head.append(robots);
+  }
   const h1 = text(document.querySelector('h1'));
   const title = h1 || document.title;
   const description = meta('description');

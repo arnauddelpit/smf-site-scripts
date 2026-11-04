@@ -34,8 +34,8 @@ export function init([nav], { env }) {
   // Passage Expertises ↔ Agence : le panneau se transforme (taille et contenu morphés) au lieu de se fermer / rouvrir.
   function morph(fromPanel, toPanel) {
     const gsap = window.gsap;
+    const from = fromPanel.getBoundingClientRect(); // à mesurer avant de le masquer
     fromPanel.classList.remove('is-open');
-    const from = fromPanel.getBoundingClientRect();
     toPanel.classList.add('is-open');
     if (!gsap || env.reducedMotion) return;
     const to = toPanel.getBoundingClientRect();
