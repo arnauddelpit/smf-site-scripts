@@ -89,3 +89,9 @@ button{font:inherit;color:inherit}
 .testimonials_component.w-variant-cba9ccb7-648d-e742-e2ef-14550bad776b .testimonial-card_quote{color:var(--_palette---color--neutral--gray-lighter)}
 .testimonials_component.w-variant-cba9ccb7-648d-e742-e2ef-14550bad776b .testimonial-card_logo{filter:brightness(0) invert(1)}
 .testimonial-video_play:focus-visible{outline-offset:4px}
+/* Carte membre (#28) : états posés par le JS (data-smf-card / data-smf-team). */
+.member-card.is-flipped .member-card_inner{transform:rotateY(180deg)}
+.member-card.is-featured .member-card_details{display:flex}
+.member-card.is-wrong .member-card_front{outline:var(--_radius-border---border--width-m) solid var(--_palette---color--brand--pink)}
+[data-smf-team="game"] .member-card{cursor:pointer}
+@media (prefers-reduced-motion:reduce){.member-card_inner{transition:none}}
