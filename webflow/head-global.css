@@ -84,3 +84,8 @@ button{font:inherit;color:inherit}
 .expertise-card:hover::before,.expertise-card:focus-visible::before{opacity:1}
 .expertise-card:hover .expertise-card_arrow,.expertise-card:focus-visible .expertise-card_arrow{display:block}
 .expertise-cards_component:has(.expertise-card:hover) .expertise-card:not(:hover){opacity:.5}
+/* Témoignages (#25) : variante Défilement (fond noir) → cartes témoignage en version sombre */
+.testimonials_component.w-variant-cba9ccb7-648d-e742-e2ef-14550bad776b .testimonial-card{background-color:var(--_theme---background--surface-dark);color:var(--_theme---text--on-dark);border-color:var(--_theme---border--on-dark-subtle)}
+.testimonials_component.w-variant-cba9ccb7-648d-e742-e2ef-14550bad776b .testimonial-card_quote{color:var(--_palette---color--neutral--gray-lighter)}
+.testimonials_component.w-variant-cba9ccb7-648d-e742-e2ef-14550bad776b .testimonial-card_logo{filter:brightness(0) invert(1)}
+.testimonial-video_play:focus-visible{outline-offset:4px}
