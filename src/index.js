@@ -26,6 +26,7 @@ const registry = [
   { name: 'team', selector: '[data-smf-team]', load: () => import('./modules/team.js') },
   { name: 'cursor', selector: '[data-smf-cursor]', gsap: true, load: () => import('./modules/cursor.js') },
   { name: 'video', selector: '[data-smf-case-tile], [data-smf-video-autoplay], [data-smf-video-play]', load: () => import('./modules/video.js') },
+  { name: 'pin-slider', selector: '[data-smf-pin-slider]', gsap: true, load: () => import('./modules/pin-slider.js') },
   { name: 'parallax', selector: '[data-smf-parallax-cols]', gsap: true, load: () => import('./modules/parallax.js') },
   { name: 'smuf', selector: '[data-smf-smuf]', gsap: true, load: () => import('./modules/smuf.js') },
 ];

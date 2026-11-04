@@ -4,7 +4,8 @@
  */
 import { onViewport } from '../utils/viewport.js';
 
-const NUMBER = /(\d[\d\s ]*(?:[.,]\d+)?)/;
+// Nombre avec séparateur de milliers par groupes de 3 chiffres (« 12 000 ») ; ne mange pas l'espace avant l'unité.
+const NUMBER = /(\d+(?:[\s ]\d{3})*(?:[.,]\d+)?)/;
 
 export function init(elements, { gsap, env }) {
   if (env.reducedMotion) return;
