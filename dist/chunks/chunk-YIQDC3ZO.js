@@ -1,0 +1,1 @@
+function f(o,{enter:r,leave:t,rootMargin:s="0px",once:c=!1}={}){let e=new IntersectionObserver(i=>{for(let n of i)n.isIntersecting?(r?.(n),c&&e.disconnect()):t?.(n)},{rootMargin:s});return e.observe(o),()=>e.disconnect()}export{f as a};

@@ -107,3 +107,24 @@ button{font:inherit;color:inherit}
 .contact-form_success{display:none}
 .contact-form_success > div{display:flex;flex-direction:column;align-items:flex-start;row-gap:var(--_spacing---space--6)}
 .contact-form_input:user-invalid{border-color:var(--_palette---color--brand--pink)}
+
+/* #35 Carrousel besoins — mode épinglé : classe .is-pinned posée par le JS data-smf-pin-slider (≥ 768 px, hors reduced-motion) ; la variante « Épinglé (aperçu) » reproduit l'état pour la Styleguide (slide 1 active). */
+.needs-slider_component.is-pinned{min-height:100vh;min-height:100svh;justify-content:center}
+.needs-slider_component.is-pinned .needs-slider_list,.needs-slider_component.w-variant-1baab8d1-fed4-8762-b37c-d428a328ddc0 .needs-slider_list{display:grid;position:relative}
+.needs-slider_component.is-pinned .needs-slider_slide,.needs-slider_component.w-variant-1baab8d1-fed4-8762-b37c-d428a328ddc0 .needs-slider_slide{grid-area:1/1;opacity:0;visibility:hidden;pointer-events:none}
+.needs-slider_component.is-pinned .needs-slider_slide.is-active,.needs-slider_component.w-variant-1baab8d1-fed4-8762-b37c-d428a328ddc0 .needs-slider_slide:first-child{opacity:1;visibility:visible;pointer-events:auto}
+.needs-slider_component.is-pinned .needs-slider_dots,.needs-slider_component.w-variant-1baab8d1-fed4-8762-b37c-d428a328ddc0 .needs-slider_dots{display:flex;position:absolute;right:0;top:50%;transform:translateY(-50%)}
+.needs-slider_dot[aria-current="true"] .needs-slider_dot-mark,.needs-slider_component.w-variant-1baab8d1-fed4-8762-b37c-d428a328ddc0 .needs-slider_dot:first-child .needs-slider_dot-mark{background-color:var(--_theme---border--primary)}
+.needs-slider_dot:focus-visible{outline:2px solid var(--_theme---focus--ring);outline-offset:2px;border-radius:999px}
+@media (max-width:767px){.needs-slider_component.w-variant-1baab8d1-fed4-8762-b37c-d428a328ddc0 .needs-slider_list{display:flex}.needs-slider_component.w-variant-1baab8d1-fed4-8762-b37c-d428a328ddc0 .needs-slider_slide{opacity:1;visibility:visible;pointer-events:auto}.needs-slider_component.w-variant-1baab8d1-fed4-8762-b37c-d428a328ddc0 .needs-slider_dots{display:none}}
+@media (max-width:991px){.needs-slider_component.is-pinned .needs-slider_dots,.needs-slider_component.w-variant-1baab8d1-fed4-8762-b37c-d428a328ddc0 .needs-slider_dots{right:calc(-1 * var(--_spacing---space--2))}}
+/* #38 Carte service : surlignage dessiné par ligne (titre inline), cyan par défaut (Ads), lime en variante Social media. JS data-smf-highlight anime background-size (0 → 100 %). */
+.service-card_title{background-image:linear-gradient(to bottom,transparent 29%,var(--_palette---color--accent--cyan) 29%,var(--_palette---color--accent--cyan) 86%,transparent 86%);background-repeat:no-repeat;background-size:100% 100%;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.service-card_component.w-variant-482c8a78-676b-ce50-1e9e-142fc9d2acf1 .service-card_title{background-image:linear-gradient(to bottom,transparent 29%,var(--_palette---color--accent--lime) 29%,var(--_palette---color--accent--lime) 86%,transparent 86%)}
+/* #40 Accordéon item (services) : .is-open posé par le JS data-smf-accordion ; la variante « Ouvert (aperçu) » porte ses propres styles. Fermé = chevron vers le haut, ouvert = vers le bas (Figma). */
+.acc-item.is-open .acc-item_content{display:flex}
+.acc-item.is-open .acc-item_chevron{transform:translateY(-2px) rotate(45deg)}
+.services-acc_photo.is-active{opacity:1}
+@media (prefers-reduced-motion:reduce){.services-acc_photo,.acc-item_chevron{transition:none}}
+/* Canvas Webflow : bandeau cookies, modale et méga-menus sont masqués par défaut dans les styles Webflow (display:none) ; la classe .is-open (combo posée par le JS, ou à la main dans le Designer pour les prévisualiser) les affiche. Aperçus de la Styleguide : */
+.styleguide_content .megamenu{display:grid}

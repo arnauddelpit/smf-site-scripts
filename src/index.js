@@ -16,14 +16,27 @@ import { whenGsap } from './utils/gsap.js';
  * Liste des attributs : smf-kit/docs/interactions.md.
  */
 const registry = [
-  // Les modules sont ajoutés ici au fil de la phase 5, par exemple :
-  // { name: 'reveal', selector: '[data-smf-reveal]:not([data-smf-reveal="none"])', gsap: true, load: () => import('./modules/reveal.js') },
+  { name: 'reveal', selector: '[data-smf-reveal]:not([data-smf-reveal="none"])', gsap: true, load: () => import('./modules/reveal.js') },
+  { name: 'nav', selector: '[data-smf-nav]', load: () => import('./modules/nav.js') },
+  { name: 'accordion', selector: '[data-smf-accordion]', gsap: true, load: () => import('./modules/accordion.js') },
+  { name: 'marquee', selector: '[data-smf-marquee]', gsap: true, load: () => import('./modules/marquee.js') },
+  { name: 'tooltip', selector: '[data-smf-tooltip]', load: () => import('./modules/tooltip.js') },
+  { name: 'count', selector: '[data-smf-count]', gsap: true, load: () => import('./modules/count.js') },
+  { name: 'highlight', selector: '[data-smf-highlight]', gsap: true, load: () => import('./modules/highlight.js') },
+  { name: 'team', selector: '[data-smf-team]', load: () => import('./modules/team.js') },
+  { name: 'cursor', selector: '[data-smf-cursor]', gsap: true, load: () => import('./modules/cursor.js') },
+  { name: 'video', selector: '[data-smf-case-tile], [data-smf-video-autoplay], [data-smf-video-play]', load: () => import('./modules/video.js') },
+  { name: 'parallax', selector: '[data-smf-parallax-cols]', gsap: true, load: () => import('./modules/parallax.js') },
+  { name: 'smuf', selector: '[data-smf-smuf]', gsap: true, load: () => import('./modules/smuf.js') },
 ];
+
+// Les SVG des Smufs sont servis à côté du bundle (dist/smf.js → ../smufs/), au même tag.
+const assetBase = new URL('../smufs/', import.meta.url).href;
 
 const state = { version: __SMF_VERSION__, loaded: [], failed: [] };
 
 async function boot() {
-  const ctx = { env, debug: env.debug };
+  const ctx = { env, debug: env.debug, assetBase };
 
   await Promise.all(
     registry.map(async ({ name, selector, gsap, load }) => {

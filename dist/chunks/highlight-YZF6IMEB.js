@@ -1,0 +1,1 @@
+import{a as e}from"./chunk-YIQDC3ZO.js";function a(t,{gsap:r,env:n}){n.reducedMotion||t.forEach((o,i)=>{r.set(o,{backgroundSize:"0% 100%"}),e(o,{once:!0,rootMargin:"0px 0px -10% 0px",enter:()=>r.to(o,{backgroundSize:"100% 100%",duration:.7,delay:i%4*.15,ease:"power2.out"})})})}export{a as init};
