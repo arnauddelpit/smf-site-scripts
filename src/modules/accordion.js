@@ -54,9 +54,10 @@ function groupOf(item) {
 
 function toggle(item, trigger, panel, gsap, env) {
   const opening = !item.classList.contains('is-open');
+  const group = groupOf(item);
+  lockHeight(group);
 
   if (opening) {
-    const group = groupOf(item);
     if (group) {
       for (const other of group.querySelectorAll('[data-smf-accordion].is-open')) {
         if (other === item) continue;
@@ -71,33 +72,54 @@ function toggle(item, trigger, panel, gsap, env) {
   }
 }
 
+/**
+ * Fige la hauteur du groupe pendant les animations : sans cela la somme (panneau qui se ferme + panneau qui s'ouvre)
+ * passe brièvement par un minimum et les photos (object-fit: cover, 100 % de hauteur) se redimensionnent
+ * (« scale down puis up »). La hauteur est recalculée à chaque clic et libérée au redimensionnement.
+ */
+function lockHeight(group) {
+  if (!group || !group.matches('[data-smf-accordion-group="single"]')) return;
+  group.style.minHeight = '';
+  group.style.minHeight = `${Math.round(group.getBoundingClientRect().height)}px`;
+  if (!group._smfResize) {
+    group._smfResize = true;
+    window.addEventListener('resize', () => { group.style.minHeight = ''; }, { passive: true });
+  }
+}
+
+const DURATION = 0.4;
+const EASE = 'power2.inOut';
+
 function open(item, trigger, panel, gsap, env) {
   item.classList.add('is-open');
   trigger.setAttribute('aria-expanded', 'true');
   syncPhotos(item);
+  gsap.killTweensOf(panel);
+  gsap.set(panel, { clearProps: 'height,overflow,display' });
   if (env.reducedMotion) return;
   gsap.fromTo(panel, { height: 0, overflow: 'hidden' }, {
     height: 'auto',
-    duration: 0.4,
-    ease: 'power2.out',
+    duration: DURATION,
+    ease: EASE,
     clearProps: 'height,overflow',
   });
 }
 
 function close(item, trigger, panel, gsap, env) {
+  // L'état logique change tout de suite (clics rapides, clavier) ; le panneau reste affiché le temps de l'animation.
+  const shown = getComputedStyle(panel).display;
+  item.classList.remove('is-open');
   trigger.setAttribute('aria-expanded', 'false');
+  gsap.killTweensOf(panel);
   if (env.reducedMotion) {
-    item.classList.remove('is-open');
+    gsap.set(panel, { clearProps: 'height,overflow,display' });
     return;
   }
+  gsap.set(panel, { display: shown === 'none' ? 'block' : shown, overflow: 'hidden' });
   gsap.to(panel, {
     height: 0,
-    overflow: 'hidden',
-    duration: 0.3,
-    ease: 'power2.inOut',
-    onComplete: () => {
-      item.classList.remove('is-open');
-      gsap.set(panel, { clearProps: 'height,overflow' });
-    },
+    duration: DURATION,
+    ease: EASE,
+    onComplete: () => gsap.set(panel, { clearProps: 'height,overflow,display' }),
   });
 }
