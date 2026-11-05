@@ -95,13 +95,16 @@ function open(item, trigger, panel, gsap, env) {
   trigger.setAttribute('aria-expanded', 'true');
   syncPhotos(item);
   gsap.killTweensOf(panel);
-  gsap.set(panel, { clearProps: 'height,overflow,display' });
+  gsap.set(panel, { clearProps: 'height,overflow,display,paddingTop,paddingBottom' });
   if (env.reducedMotion) return;
-  gsap.fromTo(panel, { height: 0, overflow: 'hidden' }, {
+  const { paddingTop, paddingBottom } = getComputedStyle(panel);
+  gsap.fromTo(panel, { height: 0, paddingTop: 0, paddingBottom: 0, overflow: 'hidden' }, {
     height: 'auto',
+    paddingTop,
+    paddingBottom,
     duration: DURATION,
     ease: EASE,
-    clearProps: 'height,overflow',
+    clearProps: 'height,overflow,paddingTop,paddingBottom',
   });
 }
 
@@ -112,14 +115,16 @@ function close(item, trigger, panel, gsap, env) {
   trigger.setAttribute('aria-expanded', 'false');
   gsap.killTweensOf(panel);
   if (env.reducedMotion) {
-    gsap.set(panel, { clearProps: 'height,overflow,display' });
+    gsap.set(panel, { clearProps: 'height,overflow,display,paddingTop,paddingBottom' });
     return;
   }
   gsap.set(panel, { display: shown === 'none' ? 'block' : shown, overflow: 'hidden' });
   gsap.to(panel, {
     height: 0,
+    paddingTop: 0,
+    paddingBottom: 0,
     duration: DURATION,
     ease: EASE,
-    onComplete: () => gsap.set(panel, { clearProps: 'height,overflow,display' }),
+    onComplete: () => gsap.set(panel, { clearProps: 'height,overflow,display,paddingTop,paddingBottom' }),
   });
 }
