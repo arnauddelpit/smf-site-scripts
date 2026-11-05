@@ -21,6 +21,31 @@ export function init(items, { gsap, env }) {
 
     trigger.addEventListener('click', () => toggle(item, trigger, panel, gsap, env));
   }
+
+  // Accordéons « un seul ouvert » (services) : le premier est ouvert au chargement, avec sa photo (Figma).
+  const done = new Set();
+  for (const item of items) {
+    const group = item.closest('[data-smf-accordion-group="single"]');
+    if (!group || done.has(group)) continue;
+    done.add(group);
+    if (group.querySelector('[data-smf-accordion].is-open')) continue;
+    const first = group.querySelector('[data-smf-accordion]');
+    const t = first?.querySelector('[data-smf-accordion-trigger]');
+    if (!first || !t) continue;
+    first.classList.add('is-open');
+    t.setAttribute('aria-expanded', 'true');
+    syncPhotos(first);
+  }
+}
+
+/** Photos associées (data-smf-accordion-photo="i") : la photo de l'item ouvert passe en .is-active. */
+function syncPhotos(item) {
+  const group = item.closest('[data-smf-accordion-group="single"]');
+  if (!group) return;
+  const index = [...group.querySelectorAll('[data-smf-accordion]')].indexOf(item);
+  for (const photo of group.querySelectorAll('[data-smf-accordion-photo]')) {
+    photo.classList.toggle('is-active', Number(photo.getAttribute('data-smf-accordion-photo')) === index);
+  }
 }
 
 function groupOf(item) {
@@ -49,6 +74,7 @@ function toggle(item, trigger, panel, gsap, env) {
 function open(item, trigger, panel, gsap, env) {
   item.classList.add('is-open');
   trigger.setAttribute('aria-expanded', 'true');
+  syncPhotos(item);
   if (env.reducedMotion) return;
   gsap.fromTo(panel, { height: 0, overflow: 'hidden' }, {
     height: 'auto',

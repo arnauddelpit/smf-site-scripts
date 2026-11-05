@@ -1,0 +1,1 @@
+function c(o){let i=location.pathname.replace(/\/+$/,"").split("/").pop();for(let t of o){let e=(t.getAttribute("data-smf-need-slug")||"").trim();if(!e)continue;if(e===i){t.remove();continue}let n=t.querySelector("a");n&&n.setAttribute("href",`/besoins/${encodeURIComponent(e)}`)}}export{c as init};
