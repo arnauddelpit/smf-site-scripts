@@ -53,8 +53,8 @@ button{font:inherit;color:inherit}
 .nav .megamenu{display:none}.nav .megamenu.is-open{display:grid}
 .nav.is-menu-open .nav_backdrop{display:block}
 .nav.is-hidden{transform:translateY(-100%)}
-.nav.is-compact .nav_container{height:5.5rem}
-.nav.is-compact .nav_logo-full{display:none}.nav.is-compact .nav_logo-compact{display:block}
+.nav.is-compact .nav_container{height:3.75rem}
+.nav.is-compact .nav_logo-full{display:none}.nav.is-compact .nav_logo-compact{display:block;width:2.5rem}
 .megamenu-item_service:hover .megamenu-item_arrow,.megamenu-item_agency:hover .megamenu-item_arrow{transform:translateX(4px)}
 @media (max-width:991px){
 .nav_container{height:5.5rem}.nav_logo-full{display:none}.nav_logo-compact{display:block}

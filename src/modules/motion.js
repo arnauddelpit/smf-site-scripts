@@ -5,6 +5,7 @@
  *  data-smf-split-title   h1/h2 : les mots montent d'un masque, en cascade, au chargement / à l'entrée dans le viewport
  *  data-smf-scrub-text    paragraphe : les mots passent de 18 % à 100 % d'opacité au fil du scroll
  *  data-smf-scale-in      média : part à 88 % et angles plus arrondis, s'élargit à 100 % en entrant (scrub)
+ *  data-smf-drift="far|mid|near"   logos flottants : dérive continue de droite à gauche sur 3 plans (vitesse, flou, opacité)
  *  data-smf-depth="N"     décor : se décale de N px (négatif = plus lent) sur la traversée de l'écran (scrub)
  *  data-smf-magnetic      bouton : suit légèrement le pointeur, s'enfonce au clic (désactivé au tactile)
  *  data-smf-card / data-smf-case-tile   cartes équipe et tuiles de cas : soulèvement + inclinaison 3D au survol
@@ -88,6 +89,37 @@ export function init(elements, { gsap, env }) {
       stagger: 0.12,
       scrollTrigger: { trigger: el, start: 'top 88%', end: 'bottom 52%', scrub: 0.4 },
     });
+  }
+
+  // Logos flottants du hero : dérive continue de droite à gauche sur trois plans (far / mid / near).
+  // Plus le plan est proche, plus l'élément est net, opaque et rapide ; il ressort à droite après être sorti à gauche.
+  const drifters = pick('data-smf-drift');
+  if (drifters.length) {
+    const layers = { far: { speed: 9, opacity: 0.55, blur: 1.4, bob: 4 }, mid: { speed: 19, opacity: 0.85, blur: 0, bob: 6 }, near: { speed: 36, opacity: 1, blur: 0, bob: 9 } };
+    const items = drifters.map((el, i) => {
+      const cfg = layers[el.getAttribute('data-smf-drift')] || layers.mid;
+      gsap.set(el, { opacity: cfg.opacity, filter: cfg.blur ? `blur(${cfg.blur}px)` : 'none', willChange: 'transform' });
+      return { el, cfg, x: 0, phase: i * 1.7 };
+    });
+    let running = false;
+    let last = 0;
+    const tick = (time) => {
+      const dt = Math.min(0.05, (time - last) / 1000 || 0);
+      last = time;
+      for (const item of items) {
+        const parent = item.el.offsetParent;
+        if (!parent) continue;
+        const width = parent.clientWidth;
+        const left = item.el.offsetLeft;
+        const w = item.el.offsetWidth;
+        item.x -= item.cfg.speed * dt;
+        if (left + item.x + w < -24) item.x += width + w + 48;
+        gsap.set(item.el, { x: item.x, y: Math.sin(time / 1000 * 0.6 + item.phase) * item.cfg.bob });
+      }
+    };
+    const start = () => { if (!running) { running = true; last = 0; gsap.ticker.add(tick); } };
+    const stop = () => { if (running) { running = false; gsap.ticker.remove(tick); } };
+    window.ScrollTrigger.create({ trigger: drifters[0].closest('section') || drifters[0], start: 'top bottom', end: 'bottom top', onToggle: (self) => (self.isActive ? start() : stop()) });
   }
 
   const media = gsap.matchMedia();
