@@ -82,6 +82,12 @@ function tile(el, env) {
 }
 
 function autoplay(el, env) {
+  // Image d'aperçu introuvable (asset non publié, 403…) : on la masque plutôt que d'afficher l'icône d'image cassée.
+  for (const img of el.querySelectorAll('img')) {
+    const hide = () => { img.style.visibility = 'hidden'; };
+    if (img.complete && img.naturalWidth === 0) hide();
+    else img.addEventListener('error', hide, { once: true });
+  }
   if (env.reducedMotion) return;
   const target = el.hasAttribute('data-smf-vimeo') ? el : el.querySelector('[data-smf-vimeo]');
   const src = playerUrl(target?.getAttribute('data-smf-vimeo'), { background: true });
