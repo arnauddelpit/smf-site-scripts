@@ -14,6 +14,15 @@ const NEEDS = {
   'booster-mes-ventes': 'ventes',
 };
 const UTM = ['utm_source', 'utm_medium', 'utm_campaign'];
+// Placeholders de la maquette (l'API Webflow ne permet pas de les poser sur les champs) et libellé de l'upload en français.
+const PLACEHOLDERS = {
+  entreprise: 'Nom de l’entreprise',
+  nom: 'Nom',
+  prenom: 'Prénom',
+  email: 'E-mail',
+  telephone: 'Téléphone',
+  message: 'Commentaires',
+};
 
 function remembered(key, fromUrl) {
   try {
@@ -29,6 +38,13 @@ export function init(forms) {
 
   for (const form of forms) {
     const field = (name) => form.querySelector(`[data-smf-form-field="${name}"]`);
+
+    for (const [name, text] of Object.entries(PLACEHOLDERS)) {
+      const el = form.querySelector(`[name="${name}"]`);
+      if (el) el.setAttribute('placeholder', text);
+    }
+    const upload = form.querySelector('.w-file-upload-text');
+    if (upload) upload.textContent = 'Sélectionnez des fichiers…';
 
     const page = field('page');
     if (page) page.value = location.origin + location.pathname;

@@ -87,6 +87,9 @@ export function init([nav], { env }) {
     t.addEventListener('mouseenter', () => isDesktop() && !env.touch && scheduleOpen(key));
     t.addEventListener('mouseleave', () => isDesktop() && !env.touch && scheduleClose());
     t.addEventListener('click', (event) => {
+      // Souris sur desktop : le survol ouvre déjà le panneau, un clic suit le lien (/expertises, /qui-sommes-nous)
+      // au lieu de refermer le panneau qu'on vient d'ouvrir. Tactile, mobile et clavier : bascule.
+      if (isDesktop() && !env.touch && event.detail > 0 && t.getAttribute('href')) return;
       event.preventDefault();
       clearTimeout(openTimer);
       setOpen(current === key ? null : key);
