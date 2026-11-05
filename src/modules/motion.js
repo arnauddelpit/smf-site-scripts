@@ -102,10 +102,9 @@ export function init(elements, { gsap, env }) {
       return { el, cfg, x: 0, phase: i * 1.7 };
     });
     let running = false;
-    let last = 0;
-    const tick = (time) => {
-      const dt = Math.min(0.05, (time - last) / 1000 || 0);
-      last = time;
+    const tick = (time, deltaTime) => {
+      // gsap.ticker : time en secondes, deltaTime en millisecondes
+      const dt = Math.min(0.05, deltaTime / 1000);
       for (const item of items) {
         const parent = item.el.offsetParent;
         if (!parent) continue;
@@ -114,10 +113,10 @@ export function init(elements, { gsap, env }) {
         const w = item.el.offsetWidth;
         item.x -= item.cfg.speed * dt;
         if (left + item.x + w < -24) item.x += width + w + 48;
-        gsap.set(item.el, { x: item.x, y: Math.sin(time / 1000 * 0.6 + item.phase) * item.cfg.bob });
+        gsap.set(item.el, { x: item.x, y: Math.sin(time * 0.6 + item.phase) * item.cfg.bob });
       }
     };
-    const start = () => { if (!running) { running = true; last = 0; gsap.ticker.add(tick); } };
+    const start = () => { if (!running) { running = true; gsap.ticker.add(tick); } };
     const stop = () => { if (running) { running = false; gsap.ticker.remove(tick); } };
     const drift = window.ScrollTrigger.create({
       trigger: drifters[0].closest('section') || drifters[0],
