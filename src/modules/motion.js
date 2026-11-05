@@ -23,9 +23,9 @@ function splitWords(root, { clip = false } = {}) {
   for (const node of nodes) {
     if (!node.nodeValue.trim()) continue;
     const frag = document.createDocumentFragment();
-    for (const part of node.nodeValue.split(/(\s+)/)) {
+    for (const part of node.nodeValue.split(/([ \t\r\n]+)/)) {
       if (!part) continue;
-      if (/^\s+$/.test(part)) {
+      if (/^[ \t\r\n]+$/.test(part)) {
         frag.append(part);
         continue;
       }
