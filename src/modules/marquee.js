@@ -12,6 +12,7 @@ export function init(elements, { gsap, env }) {
 
   for (const el of elements) {
     const kind = el.getAttribute('data-smf-marquee');
+    if (kind === 'none') continue; // variante Grille des témoignages : pas de défilement
     let track = el.firstElementChild; // élément translaté
     let host = track; // élément qui contient les éléments à dupliquer
     if (!track || track.children.length === 0) continue;
