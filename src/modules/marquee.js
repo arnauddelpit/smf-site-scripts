@@ -17,6 +17,13 @@ export function init(elements, { gsap, env }) {
     let host = track; // élément qui contient les éléments à dupliquer
     if (!track || track.children.length === 0) continue;
 
+    // Composant Témoignages (variante Défilement) : l'attribut est posé sur la piste elle-même, dont les enfants sont
+    // directement les cartes. (Accueil : l'attribut est sur une piste qui contient une liste CMS → cas ci-dessous.)
+    if (kind === 'testimonials' && el.children.length > 1) {
+      track = el;
+      host = el;
+    }
+
     // Listes CMS Webflow : la piste est enveloppée dans des conteneurs `display: contents` (w-dyn-list / w-dyn-items) que
     // transform ne peut pas translater. On duplique alors dans le vrai parent des éléments et on translate l'élément `data-smf-marquee`.
     if (getComputedStyle(track).display === 'contents') {
