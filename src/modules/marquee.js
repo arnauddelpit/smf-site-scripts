@@ -12,18 +12,30 @@ export function init(elements, { gsap, env }) {
 
   for (const el of elements) {
     const kind = el.getAttribute('data-smf-marquee');
-    const track = el.firstElementChild;
+    let track = el.firstElementChild; // élément translaté
+    let host = track; // élément qui contient les éléments à dupliquer
     if (!track || track.children.length === 0) continue;
 
-    const originals = [...track.children];
-    for (const node of originals) {
+    // Listes CMS Webflow : la piste est enveloppée dans des conteneurs `display: contents` (w-dyn-list / w-dyn-items) que
+    // transform ne peut pas translater. On duplique alors dans le vrai parent des éléments et on translate l'élément `data-smf-marquee`.
+    if (getComputedStyle(track).display === 'contents') {
+      const item = el.querySelector('.w-dyn-item') || el.querySelector(':scope > * > *');
+      if (!item) continue;
+      host = item.parentElement;
+      track = getComputedStyle(host).display === 'contents' ? el : host;
+    }
+
+    const originals = [...host.children];
+    const clones = originals.map((node) => {
       const clone = node.cloneNode(true);
       clone.setAttribute('aria-hidden', 'true');
       for (const focusable of clone.querySelectorAll('a, button, [tabindex]')) focusable.setAttribute('tabindex', '-1');
-      track.append(clone);
-    }
+      host.append(clone);
+      return clone;
+    });
 
-    const distance = () => track.scrollWidth / 2;
+    // distance d'une boucle = écart entre un élément et sa copie (inclut le gap de la grille flex)
+    const distance = () => Math.round(clones[0].offsetLeft - originals[0].offsetLeft) || track.scrollWidth / 2;
     const tween = gsap.to(track, {
       x: () => -distance(),
       duration: () => distance() / (SPEED[kind] || 40),
