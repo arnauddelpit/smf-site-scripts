@@ -28,6 +28,14 @@ function setup(root) {
   root.classList.add('is-pinned');
   let current = -1;
 
+  // ScrollTrigger n'ajoute pas l'espace de scroll quand le parent est un conteneur flex (ici la pile `is-stack`) :
+  // le contenu suivant remontait par-dessus le carrousel épinglé. On enveloppe donc la racine dans un bloc normal.
+  const wrap = document.createElement('div');
+  wrap.setAttribute('data-smf-pin-wrap', '');
+  wrap.style.width = '100%';
+  root.before(wrap);
+  wrap.append(root);
+
   const show = (index) => {
     if (index === current) return;
     current = index;
@@ -67,6 +75,10 @@ function setup(root) {
   return () => {
     handlers.forEach(([dot, fn]) => dot.removeEventListener('click', fn));
     trigger.kill();
+    if (wrap.parentNode) {
+      wrap.before(root);
+      wrap.remove();
+    }
     root.classList.remove('is-pinned');
     slides.forEach((slide) => slide.classList.remove('is-active'));
     dots.forEach((dot) => dot.removeAttribute('aria-current'));
