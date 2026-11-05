@@ -46,6 +46,11 @@ export function init(elements, { env }) {
 }
 
 function tile(el, env) {
+  // Lien propre à chaque étude de cas : la propriété « Lien » du composant ne peut pas être liée au CMS,
+  // on reconstruit donc l'URL à partir du slug de l'item exposé en data-smf-case-slug.
+  const slug = (el.getAttribute('data-smf-case-slug') || '').trim();
+  if (slug && el.tagName === 'A') el.setAttribute('href', `/etudes-de-cas/${encodeURIComponent(slug)}`);
+
   if (env.reducedMotion) return;
   const src = playerUrl(el.getAttribute('data-smf-vimeo'), { background: true });
   if (!src) return;
