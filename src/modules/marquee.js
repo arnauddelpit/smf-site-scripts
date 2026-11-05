@@ -64,11 +64,15 @@ export function init(elements, { gsap, env }) {
     window.addEventListener('resize', () => tween.invalidate(), { passive: true });
     onViewport(el, { enter: () => tween.play(), leave: () => tween.pause() });
 
-    if (kind === 'logos') {
-      el.addEventListener('mouseenter', () => tween.pause());
-      el.addEventListener('mouseleave', () => tween.play());
-      el.addEventListener('focusin', () => tween.pause());
-      el.addEventListener('focusout', () => tween.play());
+    // Pause au survol et au focus clavier pour tous les défilements (lecture d'un témoignage, clic sur le bouton du texte) ;
+    // la vitesse est ralentie / reprise en douceur (timeScale) plutôt que coupée net.
+    const slow = () => gsap.to(tween, { timeScale: 0, duration: 0.5, ease: 'power2.out', overwrite: true });
+    const resume = () => gsap.to(tween, { timeScale: 1, duration: 0.7, ease: 'power2.inOut', overwrite: true });
+    if (!env.touch) {
+      el.addEventListener('mouseenter', slow);
+      el.addEventListener('mouseleave', resume);
     }
+    el.addEventListener('focusin', slow);
+    el.addEventListener('focusout', resume);
   }
 }
