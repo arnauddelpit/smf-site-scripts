@@ -26,13 +26,22 @@ export function init(elements, { gsap, env }) {
     }
 
     const originals = [...host.children];
-    const clones = originals.map((node) => {
-      const clone = node.cloneNode(true);
-      clone.setAttribute('aria-hidden', 'true');
-      for (const focusable of clone.querySelectorAll('a, button, [tabindex]')) focusable.setAttribute('tabindex', '-1');
-      host.append(clone);
-      return clone;
-    });
+    const makeClones = () =>
+      originals.map((node) => {
+        const clone = node.cloneNode(true);
+        clone.setAttribute('aria-hidden', 'true');
+        for (const focusable of clone.querySelectorAll('a, button, [tabindex]')) focusable.setAttribute('tabindex', '-1');
+        host.append(clone);
+        return clone;
+      });
+    const clones = makeClones();
+    // Peu d'éléments (3 témoignages, 4 logos…) : on ajoute des jeux de copies tant que la piste ne couvre pas
+    // une boucle + la largeur de l'écran, sinon un vide apparaît en fin de boucle.
+    const loop = Math.round(clones[0].offsetLeft - originals[0].offsetLeft);
+    if (loop > 0) {
+      const extra = Math.max(0, Math.ceil(window.innerWidth / loop));
+      for (let i = 0; i < extra; i += 1) makeClones();
+    }
 
     // distance d'une boucle = écart entre un élément et sa copie (inclut le gap de la grille flex)
     const distance = () => Math.round(clones[0].offsetLeft - originals[0].offsetLeft) || track.scrollWidth / 2;
