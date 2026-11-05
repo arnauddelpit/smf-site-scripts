@@ -7,6 +7,7 @@
  *  data-smf-scale-in      média : part à 88 % et angles plus arrondis, s'élargit à 100 % en entrant (scrub)
  *  data-smf-depth="N"     décor : se décale de N px (négatif = plus lent) sur la traversée de l'écran (scrub)
  *  data-smf-magnetic      bouton : suit légèrement le pointeur, s'enfonce au clic (désactivé au tactile)
+ *  data-smf-card / data-smf-case-tile   cartes équipe et tuiles de cas : soulèvement + inclinaison 3D au survol
  *
  * reduced-motion : rien n'est animé, le contenu reste à son état final.
  */
@@ -111,6 +112,30 @@ export function init(elements, { gsap, env }) {
       );
     }
   });
+
+  // Cartes (équipe, tuiles d'études de cas) : léger soulèvement et inclinaison vers le pointeur, retour en ressort
+  if (!env.touch) {
+    // (cartes du mini-jeu exclues : le jeu pilote leurs transformations ; pas de `y` sur les tuiles : parallaxe G8)
+    for (const el of elements.filter((e) => (e.hasAttribute('data-smf-card') && !e.closest('[data-smf-team="game"]')) || e.hasAttribute('data-smf-case-tile'))) {
+      const big = el.hasAttribute('data-smf-case-tile');
+      const rx = gsap.quickTo(el, 'rotationX', { duration: 0.5, ease: 'power3.out' });
+      const ry = gsap.quickTo(el, 'rotationY', { duration: 0.5, ease: 'power3.out' });
+      gsap.set(el, { transformPerspective: 900 });
+      el.addEventListener('mouseenter', () => gsap.to(el, { scale: big ? 1.015 : 1.05, duration: 0.4, ease: 'power3.out' }));
+      el.addEventListener('mousemove', (event) => {
+        const r = el.getBoundingClientRect();
+        const px = (event.clientX - r.left) / r.width - 0.5;
+        const py = (event.clientY - r.top) / r.height - 0.5;
+        ry(px * (big ? 5 : 9));
+        rx(-py * (big ? 5 : 9));
+      });
+      el.addEventListener('mouseleave', () => {
+        rx(0);
+        ry(0);
+        gsap.to(el, { scale: 1, duration: 0.7, ease: 'elastic.out(1, 0.55)' });
+      });
+    }
+  }
 
   // Boutons magnétiques (pas au tactile)
   if (!env.touch) {
