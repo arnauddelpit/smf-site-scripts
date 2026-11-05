@@ -94,10 +94,11 @@ export function init(elements, { gsap, env }) {
   media.add('(min-width: 768px)', () => {
     // Médias qui s'élargissent
     for (const el of pick('data-smf-scale-in')) {
+      // clip-path plutôt que border-radius (compositing) ; scale + clip uniquement (skill scroll-experience : transform/opacity/clip-path)
       gsap.fromTo(
         el,
-        { scale: 0.88, borderRadius: '2.5rem', transformOrigin: '50% 100%' },
-        { scale: 1, borderRadius: '0rem', ease: 'none', scrollTrigger: { trigger: el, start: 'top 92%', end: 'top 25%', scrub: 0.5 } },
+        { scale: 0.88, clipPath: 'inset(0% round 2.5rem)', transformOrigin: '50% 100%' },
+        { scale: 1, clipPath: 'inset(0% round 0rem)', ease: 'none', scrollTrigger: { trigger: el, start: 'top 92%', end: 'top 25%', scrub: 0.5 } },
       );
     }
 
@@ -150,8 +151,19 @@ export function init(elements, { gsap, env }) {
       el.addEventListener('mouseleave', () => {
         gsap.to(el, { x: 0, y: 0, scale: 1, duration: 0.8, ease: 'elastic.out(1, 0.45)', overwrite: 'auto' });
       });
-      el.addEventListener('mousedown', () => gsap.to(el, { scale: 0.95, duration: 0.12, ease: 'power2.out' }));
-      el.addEventListener('mouseup', () => gsap.to(el, { scale: 1, duration: 0.5, ease: 'back.out(3)' }));
+      el.addEventListener('mouseenter', () => gsap.to(el, { scale: 1.03, duration: 0.25, ease: 'expo.out' }));
+      el.addEventListener('mousedown', () => gsap.to(el, { scale: 0.96, duration: 0.1, ease: 'power2.out', overwrite: 'auto' }));
+      el.addEventListener('mouseup', () => gsap.to(el, { scale: 1.03, duration: 0.45, ease: 'back.out(3)' }));
     }
+  }
+
+  // Retour d'appui instantané (100 ms) sur les filtres et contrôles, y compris au tactile
+  for (const el of pick('data-smf-press')) {
+    const down = () => gsap.to(el, { scale: 0.95, duration: 0.1, ease: 'power2.out', overwrite: 'auto' });
+    const up = () => gsap.to(el, { scale: 1, duration: 0.45, ease: 'back.out(3)', overwrite: 'auto' });
+    el.addEventListener('pointerdown', down);
+    el.addEventListener('pointerup', up);
+    el.addEventListener('pointerleave', up);
+    el.addEventListener('pointercancel', up);
   }
 }
