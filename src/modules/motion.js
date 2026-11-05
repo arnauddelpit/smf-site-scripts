@@ -119,7 +119,14 @@ export function init(elements, { gsap, env }) {
     };
     const start = () => { if (!running) { running = true; last = 0; gsap.ticker.add(tick); } };
     const stop = () => { if (running) { running = false; gsap.ticker.remove(tick); } };
-    window.ScrollTrigger.create({ trigger: drifters[0].closest('section') || drifters[0], start: 'top bottom', end: 'bottom top', onToggle: (self) => (self.isActive ? start() : stop()) });
+    const drift = window.ScrollTrigger.create({
+      trigger: drifters[0].closest('section') || drifters[0],
+      start: 'top bottom',
+      end: 'bottom top',
+      onToggle: (self) => (self.isActive ? start() : stop()),
+      onRefresh: (self) => (self.isActive ? start() : stop()),
+    });
+    if (drift.isActive) start();
   }
 
   const media = gsap.matchMedia();
