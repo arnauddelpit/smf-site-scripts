@@ -36,11 +36,19 @@ function setup(root) {
   root.before(wrap);
   wrap.append(root);
 
+  // Texte géant « OUIN » (data-smf-ouin) : déplacé dans la racine épinglée pour suivre le carrousel, derrière les slides.
+  // À chaque changement de slide il entre par la droite et sort par la gauche.
+  const section = wrap.closest('section');
+  const ouins = section ? [...section.querySelectorAll('[data-smf-ouin]')] : [];
+  ouins.forEach((el) => root.prepend(el));
+
   const show = (index) => {
     if (index === current) return;
     current = index;
     slides.forEach((slide, i) => slide.classList.toggle('is-active', i === index));
     dots.forEach((dot, i) => (i === index ? dot.setAttribute('aria-current', 'true') : dot.removeAttribute('aria-current')));
+
+    ouins.forEach((el, i) => gsap.fromTo(el, { xPercent: i % 2 ? 45 : 30 }, { xPercent: i % 2 ? -30 : -45, duration: 1.6, ease: 'power2.inOut', overwrite: 'auto' }));
 
     const slide = slides[index];
     const card = slide.firstElementChild;
@@ -75,6 +83,11 @@ function setup(root) {
   return () => {
     handlers.forEach(([dot, fn]) => dot.removeEventListener('click', fn));
     trigger.kill();
+    ouins.forEach((el) => {
+      gsap.killTweensOf(el);
+      gsap.set(el, { clearProps: 'transform' });
+      section.prepend(el);
+    });
     if (wrap.parentNode) {
       wrap.before(root);
       wrap.remove();

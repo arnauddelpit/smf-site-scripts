@@ -6,7 +6,37 @@
  */
 import { onViewport } from '../utils/viewport.js';
 
+/**
+ * Les chiffres ne passent pas à la ligne (white-space: nowrap) : un chiffre long (« 12 M€ ») déborde de sa tuile.
+ * On réduit sa taille de police pour que chiffre + unité tiennent dans la largeur de la tuile.
+ */
+function fitNumbers(root) {
+  const fit = () => {
+    for (const num of root.querySelectorAll('[data-smf-count]')) {
+      const figure = num.parentElement;
+      const body = figure?.parentElement;
+      if (!body) continue;
+      num.style.fontSize = '';
+      const gap = parseFloat(getComputedStyle(figure).columnGap) || 0;
+      const needed = [...figure.children].reduce((sum, child) => sum + child.getBoundingClientRect().width, 0) + gap * (figure.children.length - 1);
+      const available = body.clientWidth;
+      if (needed > available && available > 0) {
+        const size = parseFloat(getComputedStyle(num).fontSize);
+        num.style.fontSize = `${Math.floor(size * (available / needed) * 0.97)}px`;
+      }
+    }
+  };
+  fit();
+  let timer;
+  window.addEventListener('resize', () => {
+    clearTimeout(timer);
+    timer = setTimeout(fit, 150);
+  });
+  document.fonts?.ready.then(fit);
+}
+
 export function init(elements, { gsap, env }) {
+  for (const el of elements) if (!el.hasAttribute('data-smf-bento-ring')) fitNumbers(el);
   if (env.reducedMotion) return;
 
   for (const el of elements) {
