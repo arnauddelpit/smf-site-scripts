@@ -36,7 +36,7 @@ const registry = [
   { name: 'blackhole', selector: '[data-smf-blackhole]', gsap: true, load: () => import('./modules/blackhole.js') },
   { name: 'pin-slider', selector: '[data-smf-pin-slider]', gsap: true, load: () => import('./modules/pin-slider.js') },
   { name: 'parallax', selector: '[data-smf-parallax-cols]', gsap: true, load: () => import('./modules/parallax.js') },
-  { name: 'smuf', selector: '[data-smf-smuf]', gsap: true, load: () => import('./modules/smuf.js') },
+  { name: 'smuf', selector: '[data-smf-smuf]', load: () => import('./modules/smuf.js') },
 ];
 
 // Les SVG des Smufs sont servis à côté du bundle (dist/smf.js → ../smufs/), au même tag.
