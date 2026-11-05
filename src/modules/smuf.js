@@ -20,6 +20,21 @@ function load(url) {
   return cache.get(url);
 }
 
+/**
+ * Les exports Figma réutilisent les mêmes id (clip0_0_1, paint0_linear_0_1…) d'un SVG à l'autre : une fois inlinés
+ * dans la même page, le premier SVG « gagne » et les masques / dégradés des suivants pointent au mauvais endroit
+ * (le Smuf apparaît vide ou tronqué). On préfixe donc chaque id et ses références par un identifiant unique.
+ */
+let uid = 0;
+function uniquifyIds(markup) {
+  uid += 1;
+  const prefix = `s${uid}-`;
+  return markup
+    .replace(/\bid="([^"]+)"/g, (_, id) => `id="${prefix}${id}"`)
+    .replace(/url\(#([^)]+)\)/g, (_, id) => `url(#${prefix}${id})`)
+    .replace(/(xlink:href|href)="#([^"]+)"/g, (_, attr, id) => `${attr}="#${prefix}${id}"`);
+}
+
 export function init(elements, { assetBase }) {
   for (const el of elements) {
     const id = el.getAttribute('data-smf-smuf');
@@ -32,7 +47,7 @@ export function init(elements, { assetBase }) {
         try {
           const markup = await load(`${assetBase}${id}.svg`);
           const wrapper = document.createElement('div');
-          wrapper.innerHTML = markup.trim();
+          wrapper.innerHTML = uniquifyIds(markup.trim());
           const svg = wrapper.firstElementChild;
           if (!svg || svg.tagName.toLowerCase() !== 'svg') return;
 
