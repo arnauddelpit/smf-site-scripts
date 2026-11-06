@@ -43,7 +43,8 @@ export function init(forms) {
       const el = form.querySelector(`[name="${name}"]`);
       if (el) el.setAttribute('placeholder', text);
     }
-    const upload = form.querySelector('.w-file-upload-text');
+    // Libellé du bouton d'envoi de fichiers : Webflow le pose dans .w-file-upload-label > div (« Upload File » par défaut)
+    const upload = form.querySelector('.w-file-upload-label .w-inline-block, .w-file-upload-text');
     if (upload) upload.textContent = 'Sélectionnez des fichiers…';
 
     const page = field('page');
