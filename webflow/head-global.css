@@ -130,7 +130,4 @@ button{font:inherit;color:inherit}
 .styleguide_content .megamenu{display:grid}
 /* Texte raturé du titre « Ce que vous pouvez attendre d’un tel bazar dispositif » (pages Besoin). */
 .strike-word{text-decoration:line-through;text-decoration-thickness:.1em;text-decoration-skip-ink:none}
-/* Réalisations : liste CMS aplatie dans la grille, décalage en quinconce posé par le JS (data-smf-even) pour suivre les filtres. */
-.case-grid_list .w-dyn-list,.case-grid_list .w-dyn-items,.case-grid_list .w-dyn-item{display:contents}
-.case-grid_item[data-smf-even]{transform:translate(0,12.75rem)}
-@media (max-width:767px){.case-grid_item[data-smf-even]{transform:none}}
+/* Réalisations : les règles de la grille CMS filtrable sont dans le head de la page Réalisations (voir webflow/head-realisations.css). */

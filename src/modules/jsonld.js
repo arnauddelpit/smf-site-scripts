@@ -15,7 +15,7 @@ const SECTION_LABELS = {
   'etudes-de-cas': 'Études de cas',
   agence: 'L’agence',
 };
-const OFFER_PATHS = ['/offre/agence-ads', '/offre/agence-social-media', '/offre/studio-creatif', '/agence-ads', '/agence-social-media', '/studio-creatif'];
+const OFFER_PATHS = ['/expertises/agence-ads', '/expertises/agence-social-media', '/expertises/studio-creatif'];
 
 const text = (el) => (el?.textContent || '').replace(/\s+/g, ' ').trim();
 const meta = (name) => document.querySelector(`meta[name="${name}"]`)?.getAttribute('content') || undefined;
