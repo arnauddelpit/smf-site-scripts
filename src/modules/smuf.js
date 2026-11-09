@@ -35,10 +35,72 @@ function uniquifyIds(markup) {
     .replace(/(xlink:href|href)="#([^"]+)"/g, (_, attr, id) => `${attr}="#${prefix}${id}"`);
 }
 
-export function init(elements, { assetBase }) {
+/**
+ * Smufs animés (Lottie / dotLottie), uploadés par Arnaud dans les assets Webflow. Identifiant « lottie-… » posé sur le
+ * composant Smuf (méga-menu Expertises) ; le fichier est servi par le CDN Webflow (CORS ouvert). Le lecteur
+ * @lottiefiles/dotlottie-web n'est téléchargé que si un de ces Smufs est présent, et l'animation ne tourne que
+ * lorsque le Smuf est visible (méga-menu ouvert). Reduced-motion : première image fixe.
+ * ratio = largeur / hauteur de la composition.
+ */
+const SITE_ASSETS = 'https://cdn.prod.website-files.com/6ae8b90dbeb201293a031771/';
+const LOTTIES = {
+  'lottie-likes': { src: `${SITE_ASSETS}6af1997726a2402e32b5c58b_smuf%20likes.lottie`, ratio: '175 / 160' },
+  'lottie-roi': { src: `${SITE_ASSETS}6af1ab5a9965380aa0967f86_smuf%20roi.lottie`, ratio: '148 / 162' },
+  'lottie-cadreur': { src: `${SITE_ASSETS}6af1ab96704eee5b05b5f45d_smuf%20cadreur.lottie`, ratio: '168 / 219' },
+};
+const DOTLOTTIE = 'https://cdn.jsdelivr.net/npm/@lottiefiles/dotlottie-web@0.38.2/+esm';
+
+function playLottie(el, { src, ratio }, env) {
+  el.style.aspectRatio = ratio;
+  let player = null;
+  let started = false;
+
+  const start = async () => {
+    if (started) {
+      player?.play();
+      return;
+    }
+    started = true;
+    try {
+      const { DotLottie } = await import(/* webpackIgnore: true */ DOTLOTTIE);
+      const canvas = document.createElement('canvas');
+      canvas.style.cssText = 'display:block;width:100%;height:100%';
+      const label = el.getAttribute('aria-label') || el.getAttribute('data-smf-smuf-desc');
+      if (label) {
+        canvas.setAttribute('role', 'img');
+        canvas.setAttribute('aria-label', label);
+      } else {
+        canvas.setAttribute('aria-hidden', 'true');
+      }
+      el.replaceChildren(canvas);
+      const rect = el.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.max(1, Math.round(rect.width * dpr));
+      canvas.height = Math.max(1, Math.round(rect.height * dpr));
+      player = new DotLottie({ canvas, src, loop: true, autoplay: !env.reducedMotion });
+      el.setAttribute('data-smf-smuf-ready', '');
+    } catch (error) {
+      started = false;
+      console.warn('[smf] Smuf Lottie :', error);
+    }
+  };
+
+  onViewport(el, {
+    rootMargin: '100px',
+    enter: start,
+    leave: () => player?.pause(),
+  });
+}
+
+export function init(elements, { assetBase, env }) {
   for (const el of elements) {
     const id = el.getAttribute('data-smf-smuf');
     if (!id) continue;
+
+    if (LOTTIES[id]) {
+      playLottie(el, LOTTIES[id], env);
+      continue;
+    }
 
     onViewport(el, {
       once: true,
