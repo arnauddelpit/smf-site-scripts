@@ -2,15 +2,16 @@
  * Smuf astronaute du hero (data-smf-fly="astronaut") : il traverse l'écran de gauche à droite en suivant une courbe
  * de Bézier fluide, pivote pour suivre la trajectoire (tête devant, pieds derrière) et laisse derrière lui une traînée d'étoiles
  * (etoile.svg, assets Webflow) de tailles variées qui rétrécissent jusqu'à disparaître.
- * Le vol se répète avec une pause hors écran ; il ne tourne que lorsque le hero est visible.
- * reduced-motion : rien ne bouge, l'astronaute reste à sa place dans la page.
+ * Le blob lumineux (data-smf-fly-blob) l'accompagne : il entre et sort de l'écran en même temps que lui.
+ * Un seul vol, au chargement de la page (l'astronaute et le blob sont masqués en CSS avant d'entrer par la gauche) ;
+ * il est mis en pause si le hero sort de l'écran.
+ * reduced-motion : rien ne bouge, l'astronaute et le blob restent à leur place dans la page.
  */
 import { onViewport } from '../utils/viewport.js';
 
 const STAR = 'https://cdn.prod.website-files.com/6ae8b90dbeb201293a031771/6af1ddfde3fea74ad80547ae_etoile.svg';
 const STAR_SIZES = [10, 14, 18, 24, 32, 42];
 const POOL = 48;
-const PAUSE = 3.5; // secondes entre deux traversées
 const BODY_TILT = 25; // degrés : inclinaison du corps du Smuf « astro » au repos (tête vers la droite)
 
 const bezier = (p0, p1, p2, p3, t) => {
@@ -22,14 +23,17 @@ const bezier = (p0, p1, p2, p3, t) => {
 };
 
 export function init([el], { gsap, env }) {
-  if (env.reducedMotion) return;
   const section = el.closest('section');
   if (!section) return;
-
-  // Blob lumineux (data-smf-fly-blob) : centré sur l'astronaute pendant le vol, rattrape sa position en douceur,
-  // puis revient à sa place d'origine entre deux traversées. Toujours à l'arrière-plan (z-index géré dans Webflow).
+  // Blob lumineux : centré sur l'astronaute pendant tout le vol, il apparaît / disparaît avec lui aux bords de l'écran.
   const blob = section.querySelector('[data-smf-fly-blob]');
-  const blobStart = { x: 0, y: 0 };
+
+  // L'astronaute et le blob sont masqués en CSS (pas d'apparition avant l'entrée) : sans animation, on les montre en place.
+  if (env.reducedMotion) {
+    gsap.set([el, blob].filter(Boolean), { autoAlpha: 1 });
+    return;
+  }
+
   // section_hero est un contexte d'empilement (isolation) : -1 = derrière tout le contenu du hero, bulles comprises
   if (blob) blob.style.zIndex = '-1';
 
@@ -96,11 +100,6 @@ export function init([el], { gsap, env }) {
     const p3 = { x: W + 60, y: H * 0.32 };
 
     const blobBase = blob ? { x: blob.offsetLeft, y: blob.offsetTop } : null;
-    if (blob) {
-      gsap.killTweensOf(blob);
-      blobStart.x = Number(gsap.getProperty(blob, 'x')) || 0;
-      blobStart.y = Number(gsap.getProperty(blob, 'y')) || 0;
-    }
 
     state.p = 0;
     rot = null;
@@ -122,13 +121,10 @@ export function init([el], { gsap, env }) {
         rot = rot === null ? target : rot + (target - rot) * 0.15;
         gsap.set(el, { x: pos.x - baseLeft, y: pos.y - baseTop, rotation: rot });
         if (blob) {
-          // Centré sur l'astronaute ; fondu de raccord sur le début du vol pour éviter un saut depuis la position de repos
-          const k = Math.min(1, state.p / 0.12);
-          const blend = k * k * (3 - 2 * k);
-          gsap.set(blob, {
-            x: blobStart.x + (pos.x + w / 2 - blobBase.x - blobStart.x) * blend,
-            y: blobStart.y + (pos.y + h / 2 - blobBase.y - blobStart.y) * blend,
-          });
+          // Centré sur l'astronaute ; opaque dès qu'il est à ~220 px du bord, invisible quand son centre touche le bord
+          const cx = pos.x + w / 2;
+          const edge = Math.max(0, Math.min(1, Math.min(cx, W - cx) / 220));
+          gsap.set(blob, { x: cx - blobBase.x, y: pos.y + h / 2 - blobBase.y, autoAlpha: edge });
         }
 
         // Étoiles : une toutes les ~26 px parcourues, derrière l'astronaute, légèrement décalées
@@ -143,25 +139,23 @@ export function init([el], { gsap, env }) {
         }
       },
       onComplete: () => {
-        gsap.set(el, { autoAlpha: 0 });
-        if (blob) gsap.to(blob, { x: 0, y: 0, duration: 1.6, ease: 'power2.inOut' });
+        // Un seul vol : l'astronaute et le blob ne reviennent pas
+        gsap.set([el, blob].filter(Boolean), { autoAlpha: 0 });
         flight = null;
-        gsap.delayedCall(PAUSE, () => visible && !flight && fly());
+        done = true;
+        stopObserving();
       },
     });
   }
 
-  let visible = false;
-  gsap.set(el, { autoAlpha: 0 });
-  onViewport(section, {
+  let done = false;
+  gsap.set([el, blob].filter(Boolean), { autoAlpha: 0 });
+  const stopObserving = onViewport(section, {
     enter: () => {
-      visible = true;
+      if (done) return;
       if (flight) flight.resume();
       else fly();
     },
-    leave: () => {
-      visible = false;
-      flight?.pause();
-    },
+    leave: () => flight?.pause(),
   });
 }
