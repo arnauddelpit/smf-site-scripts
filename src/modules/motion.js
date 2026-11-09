@@ -95,7 +95,7 @@ export function init(elements, { gsap, env }) {
   // Plus le plan est proche, plus l'élément est net, opaque et rapide ; il ressort à droite après être sorti à gauche.
   const drifters = pick('data-smf-drift');
   if (drifters.length) {
-    const layers = { far: { speed: 9, opacity: 0.55, blur: 1.4, bob: 4 }, mid: { speed: 19, opacity: 0.85, blur: 0, bob: 6 }, near: { speed: 36, opacity: 1, blur: 0, bob: 9 } };
+    const layers = { far: { speed: 9, opacity: 0.35, blur: 3, bob: 4 }, mid: { speed: 19, opacity: 0.7, blur: 1.2, bob: 6 }, near: { speed: 36, opacity: 1, blur: 0, bob: 9 } };
     const items = drifters.map((el, i) => {
       const cfg = layers[el.getAttribute('data-smf-drift')] || layers.mid;
       gsap.set(el, { opacity: cfg.opacity, filter: cfg.blur ? `blur(${cfg.blur}px)` : 'none', willChange: 'transform' });
