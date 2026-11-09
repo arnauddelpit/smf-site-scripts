@@ -12,6 +12,8 @@ import { onViewport } from '../utils/viewport.js';
 const STAR = 'https://cdn.prod.website-files.com/6ae8b90dbeb201293a031771/6af1ddfde3fea74ad80547ae_etoile.svg';
 const STAR_SIZES = [10, 14, 18, 24, 32, 42];
 const POOL = 48;
+const RISE = 200; // px : toute la trajectoire est remontée de cette valeur par rapport au calque Figma
+const SPEED = 280; // px d'écran par seconde d'animation : durée du vol = largeur de la page / SPEED (5 s minimum)
 const DESCENT_BOOST = 0.3; // 0 = vitesse constante ; plus la valeur est grande, plus les descentes sont rapides et les montées lentes
 const BODY_TILT = 25; // degrés : inclinaison du corps du Smuf « astro » au repos (tête vers la droite)
 
@@ -154,7 +156,7 @@ export function init([el], { gsap, env }) {
     const reelT = rr ? rr.top - sr.top : H * 0.12;
     const reelH = rr ? rr.height : H * 0.75;
     const toX = (x) => (x / FIGMA_W) * W;
-    const toY = (y) => reelT + ((y - FIGMA_REEL[0]) / (FIGMA_REEL[1] - FIGMA_REEL[0])) * reelH;
+    const toY = (y) => reelT + ((y - FIGMA_REEL[0]) / (FIGMA_REEL[1] - FIGMA_REEL[0])) * reelH - RISE;
     const segments = TRAJECTORY.map((seg) => seg.map(([x, y]) => [toX(x), toY(y)]));
     // Approche : le Smuf arrive de hors écran (à gauche, au-dessus du point de départ) avant de rejoindre la courbe
     const start = segments[0][0];
@@ -180,7 +182,7 @@ export function init([el], { gsap, env }) {
 
     flight = gsap.to(state, {
       p: 1,
-      duration: Math.max(7, W / 190),
+      duration: Math.max(5, W / SPEED),
       ease: 'none', // le rythme (descentes rapides, montées lentes) vient de la trajectoire elle-même
       onUpdate: () => {
         const c = sampleAt(path, state.p);
