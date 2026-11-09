@@ -1,6 +1,6 @@
 {
   "name": "smf-site-scripts",
-  "version": "0.9.12",
+  "version": "0.9.13",
   "description": "JS custom du site Social Media Family (Webflow), servi par jsDelivr.",
   "main": "dist/smf.js",
   "scripts": {

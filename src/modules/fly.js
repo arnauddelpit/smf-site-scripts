@@ -12,30 +12,39 @@ import { onViewport } from '../utils/viewport.js';
 const STAR = 'https://cdn.prod.website-files.com/6ae8b90dbeb201293a031771/6af1ddfde3fea74ad80547ae_etoile.svg';
 const STAR_SIZES = [10, 14, 18, 24, 32, 42];
 const POOL = 48;
-const DESCENT_BOOST = 0.9; // 0 = vitesse constante ; plus la valeur est grande, plus les descentes sont rapides et les montées lentes
+const DESCENT_BOOST = 0.3; // 0 = vitesse constante ; plus la valeur est grande, plus les descentes sont rapides et les montées lentes
 const BODY_TILT = 25; // degrés : inclinaison du corps du Smuf « astro » au repos (tête vers la droite)
 
 /**
- * Courbe lisse (Catmull-Rom) passant par les points de passage, échantillonnée finement. Chaque échantillon reçoit un
- * temps cumulé : la vitesse dépend de la pente (descente = plus rapide, montée = plus lente), y vers le bas.
+ * Trajectoire dessinée dans Figma (calque « trajectoire » de la page d'accueil, frame 1920 px de large, repère du frame) :
+ * entre en haut à gauche, plonge sous le titre, remonte légèrement à hauteur de la vidéo, puis redescend vers le bas à droite.
+ * x est proportionnel à la largeur de la page ; y est calé sur la vidéo (haut de la vidéo = 184, bas = 682 dans Figma).
  */
-function buildPath(points, perSegment = 48) {
+const TRAJECTORY = [
+  [[-18, 183.5], [-3.3, 344.4], [155.4, 689], [674.5, 689]],
+  [[674.5, 689], [1202, 689], [1207, 576], [1470, 574.5]],
+  [[1470, 574.5], [1680.4, 573.3], [1867, 641], [1974.5, 742.5]],
+];
+const FIGMA_W = 1920;
+const FIGMA_REEL = [184, 682];
+
+/**
+ * Courbe échantillonnée finement. Chaque échantillon reçoit un temps cumulé : la vitesse dépend un peu de la pente
+ * (descente = plus rapide, montée = plus lente), y vers le bas.
+ */
+function buildPath(segments, perSegment = 60) {
+  // segments : courbes de Bézier cubiques [[x,y] × 4] mises bout à bout
   const samples = [];
-  const last = points.length - 1;
-  for (let i = 0; i < last; i += 1) {
-    const p0 = points[Math.max(i - 1, 0)];
-    const p1 = points[i];
-    const p2 = points[i + 1];
-    const p3 = points[Math.min(i + 2, last)];
+  for (const [a, b, c, d] of segments) {
     for (let s = 0; s < perSegment; s += 1) {
       const t = s / perSegment;
-      const t2 = t * t;
-      const t3 = t2 * t;
-      const f = (a, b, c, d) => 0.5 * (2 * b + (-a + c) * t + (2 * a - 5 * b + 4 * c - d) * t2 + (-a + 3 * b - 3 * c + d) * t3);
-      samples.push({ x: f(p0.x, p1.x, p2.x, p3.x), y: f(p0.y, p1.y, p2.y, p3.y) });
+      const u = 1 - t;
+      const f = (i) => u * u * u * a[i] + 3 * u * u * t * b[i] + 3 * u * t * t * c[i] + t * t * t * d[i];
+      samples.push({ x: f(0), y: f(1) });
     }
   }
-  samples.push({ ...points[last] });
+  const end = segments[segments.length - 1][3];
+  samples.push({ x: end[0], y: end[1] });
   let total = 0;
   samples[0].t = 0;
   for (let i = 1; i < samples.length; i += 1) {
@@ -138,35 +147,35 @@ export function init([el], { gsap, env }) {
     if (!el.offsetParent || !W) return;
     const baseLeft = el.offsetLeft;
     const baseTop = el.offsetTop;
-    // Trajectoire calée sur la mise en page : entre par la gauche, au-dessus du titre ; descend sur le flanc gauche du
-    // bloc de texte, passe SOUS le texte (titre + intro), remonte un peu au niveau de la vidéo, puis redescend et sort à droite.
+    // Trajectoire du calque Figma « trajectoire » : x proportionnel à la largeur de la page, y calé sur la hauteur de la vidéo.
     const sr = section.getBoundingClientRect();
-    const rel = (node) => {
-      const r = node.getBoundingClientRect();
-      return { l: r.left - sr.left, r: r.right - sr.left, t: r.top - sr.top, b: r.bottom - sr.top };
-    };
-    const title = section.querySelector('[data-smf-split-title]');
     const reelEl = section.querySelector('[data-smf-vimeo]');
-    const text = rel(title?.parentElement || title || el);
-    const reel = reelEl ? rel(reelEl) : { l: W * 0.65, r: W * 0.9, t: H * 0.2, b: H * 0.8 };
-    const minY = h / 2 + 12;
-    const maxY = H - h / 2 - 12;
-    const clampY = (y) => Math.max(minY, Math.min(maxY, y));
-    const belowY = clampY(text.b + h * 0.75);
-    const centers = [
-      { x: -w, y: clampY(text.t - 150) },
-      { x: Math.max(w * 0.3, text.l - w * 0.35), y: clampY((text.t + belowY) / 2) },
-      { x: (text.l + text.r) / 2, y: belowY },
-      { x: reel.l - w * 0.2, y: clampY(reel.t + (reel.b - reel.t) * 0.58) },
-      { x: W + w, y: clampY(Math.min(reel.b + h, H)) },
-    ];
-    const path = buildPath(centers);
+    const rr = reelEl ? reelEl.getBoundingClientRect() : null;
+    const reelT = rr ? rr.top - sr.top : H * 0.12;
+    const reelH = rr ? rr.height : H * 0.75;
+    const toX = (x) => (x / FIGMA_W) * W;
+    const toY = (y) => reelT + ((y - FIGMA_REEL[0]) / (FIGMA_REEL[1] - FIGMA_REEL[0])) * reelH;
+    const segments = TRAJECTORY.map((seg) => seg.map(([x, y]) => [toX(x), toY(y)]));
+    // Approche : le Smuf arrive de hors écran (à gauche, au-dessus du point de départ) avant de rejoindre la courbe
+    const start = segments[0][0];
+    segments.unshift([[-w, start[1] - 90], [-w * 0.5, start[1] - 70], [start[0] - 30, start[1] - 25], start]);
+    // Sortie : la courbe se prolonge en ligne droite jusqu'à ce que le Smuf soit entièrement hors de l'écran
+    const lastSeg = segments[segments.length - 1];
+    const end = lastSeg[3];
+    const dirX = end[0] - lastSeg[2][0];
+    const dirY = end[1] - lastSeg[2][1];
+    if (end[0] < W + w && dirX > 0) {
+      const k = (W + w - end[0]) / dirX;
+      const tail = [end[0] + dirX * k, end[1] + dirY * k];
+      segments.push([end, [end[0] + (tail[0] - end[0]) / 3, end[1] + (tail[1] - end[1]) / 3], [end[0] + ((tail[0] - end[0]) * 2) / 3, end[1] + ((tail[1] - end[1]) * 2) / 3], tail]);
+    }
+    const path = buildPath(segments);
 
     const blobBase = blob ? { x: blob.offsetLeft, y: blob.offsetTop } : null;
 
     state.p = 0;
     rot = null;
-    lastStar = { x: centers[0].x - w / 2, y: centers[0].y - h / 2 };
+    lastStar = { x: segments[0][0][0] - w / 2, y: segments[0][0][1] - h / 2 };
     gsap.set(el, { autoAlpha: 1 });
 
     flight = gsap.to(state, {
