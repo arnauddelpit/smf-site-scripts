@@ -2,8 +2,8 @@
    Webflow refuse type="module" sur les scripts enregistrés : on injecte la balise.
    À chaque release : mettre à jour V et SRI, puis update_registered_script. */
 (function () {
-  var V = 'v0.9.13';
-  var SRI = 'sha384-FdfvGTaw7x7Gcg0/Aj67lHe/UALCg9MTdF1oALu2BUNOdidI++M0HCuuqTotR4zQ';
+  var V = 'v0.9.14';
+  var SRI = 'sha384-w3ua3+Vm6pQf95aVY7jCnpWf+BsSfDYa7MGEPUuyeLasnQgTal3DR5llvyIJP205';
   var s = document.createElement('script');
   s.type = 'module';
   s.src = 'https://cdn.jsdelivr.net/gh/arnauddelpit/smf-site-scripts@' + V + '/dist/smf.js';
