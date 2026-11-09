@@ -30,6 +30,8 @@ export function init([el], { gsap, env }) {
   // puis revient à sa place d'origine entre deux traversées. Toujours à l'arrière-plan (z-index géré dans Webflow).
   const blob = section.querySelector('[data-smf-fly-blob]');
   const blobStart = { x: 0, y: 0 };
+  // section_hero est un contexte d'empilement (isolation) : -1 = derrière tout le contenu du hero, bulles comprises
+  if (blob) blob.style.zIndex = '-1';
 
   // Couche des étoiles, sous l'astronaute (même z-index, placée avant dans le DOM)
   const layer = document.createElement('div');
