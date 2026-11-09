@@ -12,15 +12,60 @@ import { onViewport } from '../utils/viewport.js';
 const STAR = 'https://cdn.prod.website-files.com/6ae8b90dbeb201293a031771/6af1ddfde3fea74ad80547ae_etoile.svg';
 const STAR_SIZES = [10, 14, 18, 24, 32, 42];
 const POOL = 48;
+const DESCENT_BOOST = 0.9; // 0 = vitesse constante ; plus la valeur est grande, plus les descentes sont rapides et les montées lentes
 const BODY_TILT = 25; // degrés : inclinaison du corps du Smuf « astro » au repos (tête vers la droite)
 
-const bezier = (p0, p1, p2, p3, t) => {
-  const u = 1 - t;
-  return {
-    x: u * u * u * p0.x + 3 * u * u * t * p1.x + 3 * u * t * t * p2.x + t * t * t * p3.x,
-    y: u * u * u * p0.y + 3 * u * u * t * p1.y + 3 * u * t * t * p2.y + t * t * t * p3.y,
-  };
-};
+/**
+ * Courbe lisse (Catmull-Rom) passant par les points de passage, échantillonnée finement. Chaque échantillon reçoit un
+ * temps cumulé : la vitesse dépend de la pente (descente = plus rapide, montée = plus lente), y vers le bas.
+ */
+function buildPath(points, perSegment = 48) {
+  const samples = [];
+  const last = points.length - 1;
+  for (let i = 0; i < last; i += 1) {
+    const p0 = points[Math.max(i - 1, 0)];
+    const p1 = points[i];
+    const p2 = points[i + 1];
+    const p3 = points[Math.min(i + 2, last)];
+    for (let s = 0; s < perSegment; s += 1) {
+      const t = s / perSegment;
+      const t2 = t * t;
+      const t3 = t2 * t;
+      const f = (a, b, c, d) => 0.5 * (2 * b + (-a + c) * t + (2 * a - 5 * b + 4 * c - d) * t2 + (-a + 3 * b - 3 * c + d) * t3);
+      samples.push({ x: f(p0.x, p1.x, p2.x, p3.x), y: f(p0.y, p1.y, p2.y, p3.y) });
+    }
+  }
+  samples.push({ ...points[last] });
+  let total = 0;
+  samples[0].t = 0;
+  for (let i = 1; i < samples.length; i += 1) {
+    const dx = samples[i].x - samples[i - 1].x;
+    const dy = samples[i].y - samples[i - 1].y;
+    const len = Math.hypot(dx, dy) || 1e-6;
+    const speed = Math.max(0.3, 1 + DESCENT_BOOST * (dy / len)); // dy/len : +1 en plongée, -1 en montée
+    total += len / speed;
+    samples[i].t = total;
+  }
+  return { samples, total };
+}
+
+/** Position (centre) et direction à l'instant normalisé u ∈ [0, 1] du vol. */
+function sampleAt({ samples, total }, u) {
+  const target = u * total;
+  let lo = 0;
+  let hi = samples.length - 1;
+  while (hi - lo > 1) {
+    const mid = (lo + hi) >> 1;
+    if (samples[mid].t <= target) lo = mid;
+    else hi = mid;
+  }
+  const a = samples[lo];
+  const b = samples[hi];
+  const k = b.t === a.t ? 0 : (target - a.t) / (b.t - a.t);
+  const ahead = samples[Math.min(samples.length - 1, hi + 4)];
+  const behind = samples[Math.max(0, lo - 4)];
+  return { x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k, dx: ahead.x - behind.x, dy: ahead.y - behind.y };
+}
 
 export function init([el], { gsap, env }) {
   const section = el.closest('section');
@@ -93,28 +138,46 @@ export function init([el], { gsap, env }) {
     if (!el.offsetParent || !W) return;
     const baseLeft = el.offsetLeft;
     const baseTop = el.offsetTop;
-    // Courbe en S : entre à gauche, plonge vers le bas puis remonte et sort à droite
-    const p0 = { x: -w - 60, y: H * 0.55 };
-    const p1 = { x: W * 0.3, y: H * 0.02 };
-    const p2 = { x: W * 0.62, y: H * 0.98 };
-    const p3 = { x: W + 60, y: H * 0.32 };
+    // Trajectoire calée sur la mise en page : entre par la gauche, au-dessus du titre ; descend sur le flanc gauche du
+    // bloc de texte, passe SOUS le texte (titre + intro), remonte un peu au niveau de la vidéo, puis redescend et sort à droite.
+    const sr = section.getBoundingClientRect();
+    const rel = (node) => {
+      const r = node.getBoundingClientRect();
+      return { l: r.left - sr.left, r: r.right - sr.left, t: r.top - sr.top, b: r.bottom - sr.top };
+    };
+    const title = section.querySelector('[data-smf-split-title]');
+    const reelEl = section.querySelector('[data-smf-vimeo]');
+    const text = rel(title?.parentElement || title || el);
+    const reel = reelEl ? rel(reelEl) : { l: W * 0.65, r: W * 0.9, t: H * 0.2, b: H * 0.8 };
+    const minY = h / 2 + 12;
+    const maxY = H - h / 2 - 12;
+    const clampY = (y) => Math.max(minY, Math.min(maxY, y));
+    const belowY = clampY(text.b + h * 0.75);
+    const centers = [
+      { x: -w, y: clampY(text.t - 150) },
+      { x: Math.max(w * 0.3, text.l - w * 0.35), y: clampY((text.t + belowY) / 2) },
+      { x: (text.l + text.r) / 2, y: belowY },
+      { x: reel.l - w * 0.2, y: clampY(reel.t + (reel.b - reel.t) * 0.58) },
+      { x: W + w, y: clampY(Math.min(reel.b + h, H)) },
+    ];
+    const path = buildPath(centers);
 
     const blobBase = blob ? { x: blob.offsetLeft, y: blob.offsetTop } : null;
 
     state.p = 0;
     rot = null;
-    lastStar = { x: p0.x, y: p0.y };
+    lastStar = { x: centers[0].x - w / 2, y: centers[0].y - h / 2 };
     gsap.set(el, { autoAlpha: 1 });
 
     flight = gsap.to(state, {
       p: 1,
-      duration: Math.max(6, W / 220),
-      ease: 'sine.inOut',
+      duration: Math.max(7, W / 190),
+      ease: 'none', // le rythme (descentes rapides, montées lentes) vient de la trajectoire elle-même
       onUpdate: () => {
-        const pos = bezier(p0, p1, p2, p3, state.p);
-        const ahead = bezier(p0, p1, p2, p3, Math.min(1, state.p + 0.01));
-        const dx = ahead.x - pos.x;
-        const dy = ahead.y - pos.y;
+        const c = sampleAt(path, state.p);
+        const pos = { x: c.x - w / 2, y: c.y - h / 2 };
+        const dx = c.dx;
+        const dy = c.dy;
         const len = Math.hypot(dx, dy) || 1;
         // Tête devant, pieds derrière : le Smuf est dessiné avec le corps incliné de ~25° vers le bas (tête à droite)
         const target = (Math.atan2(dy, dx) * 180) / Math.PI - BODY_TILT;
