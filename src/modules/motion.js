@@ -95,12 +95,35 @@ export function init(elements, { gsap, env }) {
   // Plus le plan est proche, plus l'élément est net, opaque et rapide ; il ressort à droite après être sorti à gauche.
   const drifters = pick('data-smf-drift');
   if (drifters.length) {
-    const layers = { far: { speed: 9, opacity: 0.35, blur: 3, bob: 4 }, mid: { speed: 19, opacity: 0.7, blur: 1.2, bob: 6 }, near: { speed: 36, opacity: 1, blur: 0, bob: 9 } };
+    // size = largeur absolue en px ; z : seul le premier plan passe devant le texte et la vidéo
+    const layers = {
+      far: { speed: 9, opacity: 0.35, blur: 3, bob: 4, size: 60, z: '' },
+      mid: { speed: 19, opacity: 0.7, blur: 1.2, bob: 6, size: 70, z: '' },
+      near: { speed: 36, opacity: 1, blur: 0, bob: 9, size: 80, z: '3' },
+    };
+    const applyPlane = (item, name) => {
+      const cfg = layers[name];
+      item.plane = name;
+      item.cfg = cfg;
+      item.el.style.width = `${cfg.size}px`;
+      item.el.style.zIndex = cfg.z;
+      gsap.set(item.el, { opacity: cfg.opacity, filter: cfg.blur ? `blur(${cfg.blur}px)` : 'none' });
+    };
     const items = drifters.map((el, i) => {
-      const cfg = layers[el.getAttribute('data-smf-drift')] || layers.mid;
-      gsap.set(el, { opacity: cfg.opacity, filter: cfg.blur ? `blur(${cfg.blur}px)` : 'none', willChange: 'transform' });
-      return { el, cfg, x: 0, phase: i * 1.7 };
+      const item = { el, x: 0, phase: i * 1.7 };
+      applyPlane(item, layers[el.getAttribute('data-smf-drift')] ? el.getAttribute('data-smf-drift') : 'mid');
+      gsap.set(el, { willChange: 'transform' });
+      return item;
     });
+    // À chaque passage de la gauche vers la droite, la bulle change de plan : elle prend, parmi les deux autres,
+    // celui qui compte le moins de bulles (les trois plans restent équilibrés).
+    const nextPlane = (item) => {
+      const count = (name) => items.filter((it) => it.plane === name).length;
+      const others = Object.keys(layers).filter((name) => name !== item.plane);
+      const min = Math.min(...others.map(count));
+      const pool = others.filter((name) => count(name) === min);
+      return pool[Math.floor(Math.random() * pool.length)];
+    };
     let running = false;
     const tick = (time, deltaTime) => {
       // gsap.ticker : time en secondes, deltaTime en millisecondes
@@ -110,9 +133,14 @@ export function init(elements, { gsap, env }) {
         if (!parent) continue;
         const width = parent.clientWidth;
         const left = item.el.offsetLeft;
-        const w = item.el.offsetWidth;
+        let w = item.el.offsetWidth;
         item.x -= item.cfg.speed * dt;
-        if (left + item.x + w < -24) item.x += width + w + 48;
+        if (left + item.x + w < -24) {
+          // sortie à gauche : nouveau plan (taille, opacité, flou, vitesse), puis retour par la droite
+          applyPlane(item, nextPlane(item));
+          w = item.el.offsetWidth;
+          item.x += width + w + 48;
+        }
         gsap.set(item.el, { x: item.x, y: Math.sin(time * 0.6 + item.phase) * item.cfg.bob });
       }
     };
