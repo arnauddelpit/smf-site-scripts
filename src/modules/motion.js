@@ -96,10 +96,11 @@ export function init(elements, { gsap, env }) {
   const drifters = pick('data-smf-drift');
   if (drifters.length) {
     // size = largeur absolue en px ; z : seul le premier plan passe devant le texte et la vidéo
+    // Écart marqué entre les plans : taille, opacité, flou, vitesse, amplitude et rythme du mouvement vertical
     const layers = {
-      far: { speed: 9, opacity: 0.35, blur: 3, bob: 4, size: 60, z: '' },
-      mid: { speed: 19, opacity: 0.7, blur: 1.2, bob: 6, size: 70, z: '' },
-      near: { speed: 36, opacity: 1, blur: 0, bob: 9, size: 80, z: '3' },
+      far: { speed: 8, opacity: 0.2, blur: 4.5, bob: 5, freq: 0.45, size: 36, z: '' },
+      mid: { speed: 20, opacity: 0.55, blur: 1.8, bob: 12, freq: 0.7, size: 56, z: '' },
+      near: { speed: 70, opacity: 1, blur: 0, bob: 38, freq: 1.25, size: 80, z: '3' },
     };
     const applyPlane = (item, name) => {
       const cfg = layers[name];
@@ -110,16 +111,26 @@ export function init(elements, { gsap, env }) {
       gsap.set(item.el, { opacity: cfg.opacity, filter: cfg.blur ? `blur(${cfg.blur}px)` : 'none' });
     };
     const items = drifters.map((el, i) => {
-      const item = { el, x: 0, phase: i * 1.7 };
+      // Bulles dupliquées : position de départ (left en %, top en rem) donnée par data-smf-drift-pos="left,top"
+      const at = el.getAttribute('data-smf-drift-pos');
+      if (at) {
+        const [left, top] = at.split(',').map(Number);
+        el.style.left = `${left}%`;
+        el.style.top = `${top}rem`;
+      }
+      const item = { el, net: el.getAttribute('data-smf-drift-net') || `n${i}`, x: 0, phase: i * 1.7 };
       applyPlane(item, layers[el.getAttribute('data-smf-drift')] ? el.getAttribute('data-smf-drift') : 'mid');
       gsap.set(el, { willChange: 'transform' });
       return item;
     });
     // À chaque passage de la gauche vers la droite, la bulle change de plan : elle prend, parmi les deux autres,
-    // celui qui compte le moins de bulles (les trois plans restent équilibrés).
+    // celui qui compte le moins de bulles (les trois plans restent équilibrés). Deux bulles du même réseau
+    // (data-smf-drift-net) ne sont jamais sur le même plan.
     const nextPlane = (item) => {
       const count = (name) => items.filter((it) => it.plane === name).length;
-      const others = Object.keys(layers).filter((name) => name !== item.plane);
+      const taken = new Set(items.filter((it) => it !== item && it.net === item.net).map((it) => it.plane));
+      let others = Object.keys(layers).filter((name) => name !== item.plane && !taken.has(name));
+      if (!others.length) others = Object.keys(layers).filter((name) => name !== item.plane);
       const min = Math.min(...others.map(count));
       const pool = others.filter((name) => count(name) === min);
       return pool[Math.floor(Math.random() * pool.length)];
@@ -141,7 +152,9 @@ export function init(elements, { gsap, env }) {
           w = item.el.offsetWidth;
           item.x += width + w + 48;
         }
-        gsap.set(item.el, { x: item.x, y: Math.sin(time * 0.6 + item.phase) * item.cfg.bob });
+        // Mouvement vertical : sinusoïde + harmonique, plus ample et plus vive au premier plan
+        const t = time * item.cfg.freq + item.phase;
+        gsap.set(item.el, { x: item.x, y: (Math.sin(t) + 0.35 * Math.sin(t * 2.3 + 1)) * item.cfg.bob });
       }
     };
     const start = () => { if (!running) { running = true; gsap.ticker.add(tick); } };
