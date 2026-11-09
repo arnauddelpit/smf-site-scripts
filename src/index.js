@@ -37,6 +37,7 @@ const registry = [
   { name: 'pin-slider', selector: '[data-smf-pin-slider]', gsap: true, load: () => import('./modules/pin-slider.js') },
   { name: 'parallax', selector: '[data-smf-parallax-cols]', gsap: true, load: () => import('./modules/parallax.js') },
   { name: 'motion', selector: '[data-smf-split-title], [data-smf-scrub-text], [data-smf-scale-in], [data-smf-depth], [data-smf-drift], [data-smf-magnetic], [data-smf-press], [data-smf-card], [data-smf-case-tile]', gsap: true, load: () => import('./modules/motion.js') },
+  { name: 'fly', selector: '[data-smf-fly="astronaut"]', gsap: true, load: () => import('./modules/fly.js') },
   { name: 'smuf', selector: '[data-smf-smuf]', load: () => import('./modules/smuf.js') },
   { name: 'filter', selector: '[data-smf-filter="cases"]', gsap: true, load: () => import('./modules/filter.js') },
   { name: 'needs', selector: '[data-smf-need-slug]', load: () => import('./modules/needs.js') },
