@@ -26,6 +26,11 @@ export function init([el], { gsap, env }) {
   const section = el.closest('section');
   if (!section) return;
 
+  // Blob lumineux (data-smf-fly-blob) : centré sur l'astronaute pendant le vol, rattrape sa position en douceur,
+  // puis revient à sa place d'origine entre deux traversées. Toujours à l'arrière-plan (z-index géré dans Webflow).
+  const blob = section.querySelector('[data-smf-fly-blob]');
+  const blobStart = { x: 0, y: 0 };
+
   // Couche des étoiles, sous l'astronaute (même z-index, placée avant dans le DOM)
   const layer = document.createElement('div');
   layer.setAttribute('aria-hidden', 'true');
@@ -88,6 +93,13 @@ export function init([el], { gsap, env }) {
     const p2 = { x: W * 0.62, y: H * 0.98 };
     const p3 = { x: W + 60, y: H * 0.32 };
 
+    const blobBase = blob ? { x: blob.offsetLeft, y: blob.offsetTop } : null;
+    if (blob) {
+      gsap.killTweensOf(blob);
+      blobStart.x = Number(gsap.getProperty(blob, 'x')) || 0;
+      blobStart.y = Number(gsap.getProperty(blob, 'y')) || 0;
+    }
+
     state.p = 0;
     rot = null;
     lastStar = { x: p0.x, y: p0.y };
@@ -107,6 +119,15 @@ export function init([el], { gsap, env }) {
         const target = (Math.atan2(dy, dx) * 180) / Math.PI - BODY_TILT;
         rot = rot === null ? target : rot + (target - rot) * 0.15;
         gsap.set(el, { x: pos.x - baseLeft, y: pos.y - baseTop, rotation: rot });
+        if (blob) {
+          // Centré sur l'astronaute ; fondu de raccord sur le début du vol pour éviter un saut depuis la position de repos
+          const k = Math.min(1, state.p / 0.12);
+          const blend = k * k * (3 - 2 * k);
+          gsap.set(blob, {
+            x: blobStart.x + (pos.x + w / 2 - blobBase.x - blobStart.x) * blend,
+            y: blobStart.y + (pos.y + h / 2 - blobBase.y - blobStart.y) * blend,
+          });
+        }
 
         // Étoiles : une toutes les ~26 px parcourues, derrière l'astronaute, légèrement décalées
         if (Math.hypot(pos.x - lastStar.x, pos.y - lastStar.y) > 26) {
@@ -121,6 +142,7 @@ export function init([el], { gsap, env }) {
       },
       onComplete: () => {
         gsap.set(el, { autoAlpha: 0 });
+        if (blob) gsap.to(blob, { x: 0, y: 0, duration: 1.6, ease: 'power2.inOut' });
         flight = null;
         gsap.delayedCall(PAUSE, () => visible && !flight && fly());
       },
