@@ -1,6 +1,6 @@
 /**
  * Smuf astronaute du hero (data-smf-fly="astronaut") : il traverse l'écran de gauche à droite en suivant une courbe
- * de Bézier fluide, s'incline légèrement dans le sens de la trajectoire et laisse derrière lui une traînée d'étoiles
+ * de Bézier fluide, pivote pour suivre la trajectoire (tête devant, pieds derrière) et laisse derrière lui une traînée d'étoiles
  * (etoile.svg, assets Webflow) de tailles variées qui rétrécissent jusqu'à disparaître.
  * Le vol se répète avec une pause hors écran ; il ne tourne que lorsque le hero est visible.
  * reduced-motion : rien ne bouge, l'astronaute reste à sa place dans la page.
@@ -11,6 +11,7 @@ const STAR = 'https://cdn.prod.website-files.com/6ae8b90dbeb201293a031771/6af1dd
 const STAR_SIZES = [10, 14, 18, 24, 32, 42];
 const POOL = 48;
 const PAUSE = 3.5; // secondes entre deux traversées
+const BODY_TILT = 25; // degrés : inclinaison du corps du Smuf « astro » au repos (tête vers la droite)
 
 const bezier = (p0, p1, p2, p3, t) => {
   const u = 1 - t;
@@ -70,7 +71,7 @@ export function init([el], { gsap, env }) {
 
   const state = { p: 0 };
   let flight = null;
-  let rot = 0;
+  let rot = null;
   let lastStar = { x: 0, y: 0 };
 
   function fly() {
@@ -88,7 +89,7 @@ export function init([el], { gsap, env }) {
     const p3 = { x: W + 60, y: H * 0.32 };
 
     state.p = 0;
-    rot = 0;
+    rot = null;
     lastStar = { x: p0.x, y: p0.y };
     gsap.set(el, { autoAlpha: 1 });
 
@@ -102,8 +103,9 @@ export function init([el], { gsap, env }) {
         const dx = ahead.x - pos.x;
         const dy = ahead.y - pos.y;
         const len = Math.hypot(dx, dy) || 1;
-        const target = Math.max(-25, Math.min(25, (Math.atan2(dy, dx) * 180) / Math.PI * 0.45));
-        rot += (target - rot) * 0.08;
+        // Tête devant, pieds derrière : le Smuf est dessiné avec le corps incliné de ~25° vers le bas (tête à droite)
+        const target = (Math.atan2(dy, dx) * 180) / Math.PI - BODY_TILT;
+        rot = rot === null ? target : rot + (target - rot) * 0.15;
         gsap.set(el, { x: pos.x - baseLeft, y: pos.y - baseTop, rotation: rot });
 
         // Étoiles : une toutes les ~26 px parcourues, derrière l'astronaute, légèrement décalées
