@@ -16,7 +16,8 @@ import { whenGsap } from './utils/gsap.js';
  * Liste des attributs : smf-kit/docs/interactions.md.
  */
 const registry = [
-  { name: 'reveal', selector: '[data-smf-reveal]:not([data-smf-reveal="none"])', gsap: true, load: () => import('./modules/reveal.js') },
+  // Apparitions au scroll : maintenant des interactions IX3 natives (Reveal - fade-up / stagger). Module conservé au cas où :
+  // { name: 'reveal', selector: '[data-smf-reveal]:not([data-smf-reveal="none"])', gsap: true, load: () => import('./modules/reveal.js') },
   { name: 'nav', selector: '[data-smf-nav]', load: () => import('./modules/nav.js') },
   { name: 'accordion', selector: '[data-smf-accordion]', gsap: true, load: () => import('./modules/accordion.js') },
   { name: 'marquee', selector: '[data-smf-marquee]', gsap: true, load: () => import('./modules/marquee.js') },
