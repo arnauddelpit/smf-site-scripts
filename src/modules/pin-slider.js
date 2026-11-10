@@ -1,7 +1,8 @@
 /**
  * H4 — Carrousel besoins épinglé (data-smf-pin-slider) : la section est épinglée, chaque cran de scroll = slide suivante.
  * Le CSS global gère l'affichage via .is-pinned (racine) et .is-active (slide) ; les puces [data-smf-pin-dot] sont
- * cliquables (aria-current). La carte texte et la tuile d'étude de cas bougent de façon différente, la tuile avec 0,1 s de retard.
+ * cliquables (aria-current). L'en-tête de la section (titre + texte) est épinglé avec le carrousel. La carte texte et la tuile
+ * d'étude de cas entrent / sortent par le bas / le haut en même temps (la carte plus vite : elle est moins haute), avec un léger rebond.
  * À 767 px et en dessous, ou en reduced-motion : rien n'est épinglé, les slides restent empilées.
  */
 import { registerPlugins } from '../utils/gsap.js';
@@ -30,31 +31,60 @@ function setup(root) {
 
   // ScrollTrigger n'ajoute pas l'espace de scroll quand le parent est un conteneur flex (ici la pile `is-stack`) :
   // le contenu suivant remontait par-dessus le carrousel épinglé. On enveloppe donc la racine dans un bloc normal.
+  // Ce bloc est ce qu'on épingle : il contient aussi l'en-tête de section (titre + texte), qui précède le carrousel, pour que
+  // titre, texte et slider restent visibles ensemble. Hauteur = écran ; le carrousel prend la place restante.
   const wrap = document.createElement('div');
   wrap.setAttribute('data-smf-pin-wrap', '');
-  wrap.style.width = '100%';
+  wrap.style.cssText = 'width:100%;height:100vh;height:100svh;position:relative;display:flex;flex-direction:column;gap:1.5rem;padding-top:4.5rem;padding-bottom:1.5rem;box-sizing:border-box';
+  const head = root.previousElementSibling;
   root.before(wrap);
+  if (head) wrap.append(head);
   wrap.append(root);
+  // Le carrousel remplit la hauteur restante ; les slides sortantes / entrantes sont rognées en haut et en bas (pas sur les côtés)
+  root.style.minHeight = '0';
+  root.style.flex = '1 1 0';
+  root.style.clipPath = 'inset(0 -100vw 0 -100vw)';
 
-  // Texte géant « OUIN » (data-smf-ouin) : STATIQUE. Il est seulement déplacé dans la racine épinglée pour rester
+  // Texte géant « OUIN » (data-smf-ouin) : STATIQUE. Il est seulement déplacé dans le bloc épinglé pour rester
   // derrière le carrousel pendant l'épinglage (aucune animation).
   const section = wrap.closest('section');
   const ouins = section ? [...section.querySelectorAll('[data-smf-ouin]')] : [];
-  ouins.forEach((el) => root.prepend(el));
+  ouins.forEach((el) => wrap.prepend(el));
 
   const parts = (slide) => [slide.firstElementChild, slide.querySelector('[data-slot="need-tile"]')].filter(Boolean);
   const reset = (slide) => {
     const p = parts(slide);
     gsap.killTweensOf(p);
-    gsap.set(p, { clearProps: 'opacity,transform' });
+    gsap.set(p, { clearProps: 'transform' });
     slide.style.visibility = '';
     slide.style.opacity = '';
   };
 
+  /** Position (haut) et hauteur d'un élément dans le carrousel, hors translation GSAP en cours. */
+  const geom = (el) => {
+    const y = Number(gsap.getProperty(el, 'y')) || 0;
+    const r = el.getBoundingClientRect();
+    return { top: r.top - root.getBoundingClientRect().top - y, h: r.height };
+  };
   /**
-   * Transition entre slides, sensible au sens du scroll : la slide sortante monte (ou descend) en s'effaçant vite
-   * (carte puis tuile), la suivante arrive du sens opposé avec un léger retard, en expo.out. Les deux restent
-   * empilées dans la même cellule de grille pendant le fondu ; la sortante est maintenue visible en style inline.
+   * Distance à parcourir pour entrer (depuis le bas) ou sortir (par le haut) du carrousel. La carte est moins haute que la tuile :
+   * pour arriver / partir en même temps (même durée), elle parcourt une distance plus grande dans le rapport des hauteurs,
+   * donc elle va plus vite.
+   */
+  const travel = (slide, mode) => {
+    const [card, tile] = parts(slide);
+    const main = tile || card;
+    const g = geom(main);
+    const base = mode === 'in' ? root.clientHeight - g.top : g.top + g.h;
+    const ratio = tile ? Math.max(1, g.h / geom(card).h) : 1;
+    return { card: base * ratio, tile: base };
+  };
+
+  /**
+   * Transition entre slides, sensible au sens du scroll : la sortante quitte le carrousel (par le haut en descendant, par le bas en
+   * remontant) avec un petit recul avant de partir ; la suivante arrive du sens opposé avec un léger rebond à l'arrivée.
+   * Aucun fondu, aucune rotation. Les deux restent empilées dans la même cellule de grille ; la sortante est maintenue
+   * visible en style inline pendant son départ.
    */
   const show = (index) => {
     if (index === current) return;
@@ -72,29 +102,32 @@ function setup(root) {
 
     if (prev) {
       const out = parts(prev);
+      const dist = travel(prev, 'out');
       gsap.killTweensOf(out);
       prev.style.visibility = 'visible';
       prev.style.opacity = '1';
-      gsap.to(out, {
-        opacity: 0,
-        y: -34 * dir,
-        duration: 0.3,
-        ease: 'power2.in',
-        stagger: 0.04,
-        overwrite: true,
-        onComplete: () => reset(prev),
+      out.forEach((part, i) => {
+        gsap.to(part, {
+          y: -dir * (i === 0 ? dist.card : dist.tile),
+          duration: 0.7,
+          ease: 'back.in(1.2)',
+          overwrite: true,
+          onComplete: i === 0 ? () => reset(prev) : undefined,
+        });
       });
     }
 
     reset(next);
+    if (!prev) return; // première slide : en place, sans animation
+    const dist = travel(next, 'in');
     const [card, tile] = parts(next);
-    const delay = prev ? 0.22 : 0;
-    gsap.fromTo(card, { opacity: 0, y: 56 * dir }, { opacity: 1, y: 0, duration: 0.85, delay, ease: 'expo.out' });
-    if (tile) gsap.fromTo(tile, { opacity: 0, y: 80 * dir, rotation: 3 * dir, scale: 0.97 }, { opacity: 1, y: 0, rotation: 0, scale: 1, duration: 0.95, delay: delay + 0.1, ease: 'expo.out' });
+    const delay = 0.25;
+    gsap.fromTo(card, { y: dist.card * dir }, { y: 0, duration: 1, delay, ease: 'back.out(1.3)' });
+    if (tile) gsap.fromTo(tile, { y: dist.tile * dir }, { y: 0, duration: 1, delay, ease: 'back.out(1.3)' });
   };
 
   const trigger = window.ScrollTrigger.create({
-    trigger: root,
+    trigger: wrap,
     start: 'top top',
     end: () => `+=${Math.round(slides.length * window.innerHeight * 0.6)}`,
     pin: true,
@@ -123,7 +156,11 @@ function setup(root) {
     trigger.kill();
     ouins.forEach((el) => section.prepend(el));
     slides.forEach(reset);
+    root.style.minHeight = '';
+    root.style.flex = '';
+    root.style.clipPath = '';
     if (wrap.parentNode) {
+      if (head) wrap.before(head);
       wrap.before(root);
       wrap.remove();
     }
