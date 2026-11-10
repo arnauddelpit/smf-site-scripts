@@ -10,6 +10,7 @@ import { registerPlugins } from '../utils/gsap.js';
 const HEAD_TOP = 72; // px : décalage de l'en-tête sticky (sous la barre de navigation compacte de 60 px)
 const HEAD_GAP = 24; // px : espace entre l'en-tête et les slides
 const SCALE_DOWN = 0.93; // échelle finale de la slide recouverte
+const HOLD = 0.3; // part de la hauteur d'écran où chaque slide reste seule et nette avant que la suivante ne remonte
 
 export function init(elements, { gsap }) {
   if (registerPlugins(gsap, ['ScrollTrigger']).length) {
@@ -60,6 +61,10 @@ function setup(root) {
       slide.style.minHeight = `${Math.max(0, window.innerHeight - stickyTop)}px`;
       slide.style.transformOrigin = '50% 0%';
     });
+    // temps de lecture : la slide reste seule et nette sur cette distance de scroll avant que la suivante n'apparaisse
+    slides.forEach((slide, i) => {
+      slide.style.marginBottom = i < slides.length - 1 ? `${Math.round(window.innerHeight * HOLD)}px` : '';
+    });
     if (dotsNav) dotsNav.style.marginBottom = `-${dotsNav.offsetHeight}px`;
   };
   layout();
@@ -105,7 +110,7 @@ function setup(root) {
 
   const goTo = (index) => {
     const listTop = list.getBoundingClientRect().top + window.scrollY;
-    const before = slides.slice(0, index).reduce((sum, slide) => sum + slide.offsetHeight, 0);
+    const before = slides.slice(0, index).reduce((sum, slide) => sum + slide.offsetHeight + (parseFloat(slide.style.marginBottom) || 0), 0);
     window.scrollTo({ top: listTop + before - stickyTop + 2, behavior: 'smooth' });
   };
   const handlers = dots.map((dot, index) => {
@@ -130,6 +135,7 @@ function setup(root) {
       slide.style.position = '';
       slide.style.top = '';
       slide.style.minHeight = '';
+      slide.style.marginBottom = '';
       slide.style.transformOrigin = '';
     });
     list.style.rowGap = '';
