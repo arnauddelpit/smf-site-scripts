@@ -48,13 +48,20 @@ const registry = [
   { name: 'needs', selector: '[data-smf-need-slug]', load: () => import('./modules/needs.js') },
 ];
 
-// Les SVG des Smufs sont servis à côté du bundle (dist/smf.js → ../smufs/), au même tag.
-const assetBase = new URL('../smufs/', import.meta.url).href;
+// Les SVG des Smufs : soit un fichier JSON regroupé hébergé dans les assets Webflow (build hébergé : SMF_SMUFS_URL),
+// soit servis à côté du bundle (dist/smf.js → ../smufs/, build jsDelivr).
+let assetBase = '';
+try {
+  assetBase = new URL('../smufs/', import.meta.url).href;
+} catch {
+  /* bundle classique hébergé : pas d'import.meta.url, on utilise le JSON */
+}
+const smufsUrl = __SMF_SMUFS_URL__;
 
 const state = { version: __SMF_VERSION__, loaded: [], failed: [] };
 
 async function boot() {
-  const ctx = { env, debug: env.debug, assetBase };
+  const ctx = { env, debug: env.debug, assetBase, smufsUrl };
 
   await Promise.all(
     registry.map(async ({ name, selector, gsap, load }) => {

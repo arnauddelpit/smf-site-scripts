@@ -94,7 +94,17 @@ function playLottie(el, { src, ratio }, env) {
   });
 }
 
-export function init(elements, { assetBase, env }) {
+/** SVG d'un Smuf : depuis le fichier JSON regroupé hébergé dans Webflow (smufsUrl), sinon depuis smufs/<id>.svg (jsDelivr). */
+async function markupOf(id, { assetBase, smufsUrl }) {
+  if (smufsUrl) {
+    const map = JSON.parse(await load(smufsUrl));
+    if (!map[id]) throw new Error(`Smuf inconnu : ${id}`);
+    return map[id];
+  }
+  return load(`${assetBase}${id}.svg`);
+}
+
+export function init(elements, { assetBase, smufsUrl, env }) {
   for (const el of elements) {
     const id = el.getAttribute('data-smf-smuf');
     if (!id) continue;
@@ -109,7 +119,7 @@ export function init(elements, { assetBase, env }) {
       rootMargin: '200px',
       enter: async () => {
         try {
-          const markup = await load(`${assetBase}${id}.svg`);
+          const markup = await markupOf(id, { assetBase, smufsUrl });
           const wrapper = document.createElement('div');
           wrapper.innerHTML = uniquifyIds(markup.trim());
           const svg = wrapper.firstElementChild;

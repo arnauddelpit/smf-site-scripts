@@ -15,7 +15,7 @@ const options = {
   minify: !watch,
   sourcemap: watch ? 'inline' : false,
   legalComments: 'none',
-  define: { __SMF_VERSION__: JSON.stringify(version) },
+  define: { __SMF_VERSION__: JSON.stringify(version), __SMF_SMUFS_URL__: JSON.stringify('') },
   logLevel: 'info',
 };
 
