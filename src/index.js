@@ -34,6 +34,7 @@ const registry = [
   { name: 'graph', selector: '[data-smf-graph-videos]', gsap: true, load: () => import('./modules/graph.js') },
   { name: 'roas', selector: '[data-smf-roas]', gsap: true, load: () => import('./modules/roas.js') },
   { name: 'blackhole', selector: '[data-smf-blackhole]', gsap: true, load: () => import('./modules/blackhole.js') },
+  { name: 'needs-dots', selector: '[data-smf-needs-dots]', load: () => import('./modules/needs-dots.js') },
   { name: 'pin-slider', selector: '[data-smf-pin-slider]', gsap: true, load: () => import('./modules/pin-slider.js') },
   { name: 'parallax', selector: '[data-smf-parallax-cols]', gsap: true, load: () => import('./modules/parallax.js') },
   { name: 'motion', selector: '[data-smf-split-title], [data-smf-scrub-text], [data-smf-scale-in], [data-smf-depth], [data-smf-drift], [data-smf-magnetic], [data-smf-press], [data-smf-card], [data-smf-case-tile]', gsap: true, load: () => import('./modules/motion.js') },
