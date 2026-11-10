@@ -11,7 +11,9 @@ const HEAD_TOP = 72; // px : décalage de l'en-tête sticky (sous la barre de na
 const HEAD_GAP = 24; // px : espace entre l'en-tête et les slides
 const SCALE_DOWN = 0.93; // échelle finale de la slide recouverte
 const OUIN_DURATION = 7; // s : traversée de l'écran par chaque « oin »
-const SMUF = { left: 'calc(67.5% - 93px)', feet: 3, width: 187 }; // Smuf qui pleure : position sur la carte (Figma : centre à 67,5 % de la largeur, pieds 3 px sous le bord haut)
+// Smuf qui pleure : position sur la carte (Figma : centre à 67,5 % de la largeur, pieds 3 px sous le bord haut ;
+// feet = 3 px + 25 px de marge transparente sous les pieds dans le Lottie)
+const SMUF = { left: 'calc(67.5% - 93px)', feet: 28, width: 187 };
 const HOLD = 0.3; // part de la hauteur d'écran où chaque slide reste seule et nette avant que la suivante ne remonte
 
 export function init(elements, { gsap }) {
