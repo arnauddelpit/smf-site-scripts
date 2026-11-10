@@ -59,7 +59,8 @@ export function init(elements, { gsap, env }) {
 
   // Effets passés en interactions IX3 natives (Titres - mots qui montent du masque ; Profondeur -60 … 70) : le code reste
   // ci-dessous au cas où, il suffit de retirer l'attribut de cette liste pour le réactiver (et supprimer l'interaction).
-  const NATIVE = new Set(['data-smf-split-title', 'data-smf-depth']);
+  // (data-smf-card regroupe aussi les tuiles d'études de cas ; data-smf-magnetic = boutons : suivi du pointeur + survol)
+  const NATIVE = new Set(['data-smf-split-title', 'data-smf-depth', 'data-smf-magnetic', 'data-smf-card']);
   const pick = (attr) => (NATIVE.has(attr) ? [] : elements.filter((el) => el.hasAttribute(attr)));
 
   // Titres : mots qui montent du masque
@@ -197,7 +198,7 @@ export function init(elements, { gsap, env }) {
   });
 
   // Cartes (équipe, tuiles d'études de cas) : léger soulèvement et inclinaison vers le pointeur, retour en ressort
-  if (!env.touch) {
+  if (!env.touch && !NATIVE.has('data-smf-card')) {
     // (cartes du mini-jeu exclues : le jeu pilote leurs transformations ; pas de `y` sur les tuiles : parallaxe G8)
     for (const el of elements.filter((e) => (e.hasAttribute('data-smf-card') && !e.closest('[data-smf-team="game"]')) || e.hasAttribute('data-smf-case-tile'))) {
       const big = el.hasAttribute('data-smf-case-tile');
@@ -220,7 +221,7 @@ export function init(elements, { gsap, env }) {
     }
   }
 
-  // Boutons magnétiques (pas au tactile)
+  // Boutons magnétiques (pas au tactile) — pick() renvoie une liste vide quand l'effet est natif
   if (!env.touch) {
     for (const el of pick('data-smf-magnetic')) {
       const x = gsap.quickTo(el, 'x', { duration: 0.5, ease: 'power3.out' });
