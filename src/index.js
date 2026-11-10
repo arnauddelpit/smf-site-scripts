@@ -31,13 +31,15 @@ const registry = [
   { name: 'jsonld', selector: 'body', load: () => import('./modules/jsonld.js') },
   { name: 'form', selector: '[data-smf-form="contact"]', load: () => import('./modules/form.js') },
   { name: 'bento', selector: '[data-smf-bento], [data-smf-bento-ring]', gsap: true, load: () => import('./modules/bento.js') },
-  { name: 'steps', selector: '[data-smf-steps]', gsap: true, load: () => import('./modules/steps.js') },
+  // Parcours : interaction IX3 native (Parcours - etapes et liaisons au scroll). Module conservé au cas où :
+  // { name: 'steps', selector: '[data-smf-steps]', gsap: true, load: () => import('./modules/steps.js') },
   { name: 'graph', selector: '[data-smf-graph-videos]', gsap: true, load: () => import('./modules/graph.js') },
   { name: 'roas', selector: '[data-smf-roas]', gsap: true, load: () => import('./modules/roas.js') },
   { name: 'blackhole', selector: '[data-smf-blackhole]', gsap: true, load: () => import('./modules/blackhole.js') },
   { name: 'needs-dots', selector: '[data-smf-needs-dots]', load: () => import('./modules/needs-dots.js') },
   { name: 'pin-slider', selector: '[data-smf-pin-slider]', gsap: true, load: () => import('./modules/pin-slider.js') },
-  { name: 'parallax', selector: '[data-smf-parallax-cols]', gsap: true, load: () => import('./modules/parallax.js') },
+  // Colonnes décalées : interaction IX3 native (Parallax - colonne de droite…). Module conservé au cas où :
+  // { name: 'parallax', selector: '[data-smf-parallax-cols]', gsap: true, load: () => import('./modules/parallax.js') },
   { name: 'motion', selector: '[data-smf-split-title], [data-smf-scrub-text], [data-smf-scale-in], [data-smf-depth], [data-smf-drift], [data-smf-magnetic], [data-smf-press], [data-smf-card], [data-smf-case-tile]', gsap: true, load: () => import('./modules/motion.js') },
   { name: 'fly', selector: '[data-smf-fly="astronaut"]', gsap: true, load: () => import('./modules/fly.js') },
   { name: 'smuf', selector: '[data-smf-smuf]', load: () => import('./modules/smuf.js') },
