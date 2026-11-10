@@ -50,6 +50,19 @@ function setup(root) {
     dotsNav.style.cssText = 'display:flex;position:sticky;top:50svh;align-self:flex-end;z-index:6;transform:none;right:auto';
   }
 
+  // Texte géant « OUIN » (data-smf-ouin) : STATIQUE, positionné par rapport au haut de l'écran. Il est placé dans un calque
+  // sticky (hauteur nulle) derrière les slides, pour rester en place pendant toute la traversée.
+  const section = root.closest('section');
+  const ouins = section ? [...section.querySelectorAll('[data-smf-ouin]')] : [];
+  let holder = null;
+  if (ouins.length) {
+    holder = document.createElement('div');
+    holder.setAttribute('aria-hidden', 'true');
+    holder.style.cssText = 'position:sticky;top:0;align-self:stretch;height:0;z-index:0;pointer-events:none';
+    root.prepend(holder);
+    ouins.forEach((el) => holder.append(el));
+  }
+
   list.style.rowGap = '0px';
   let stickyTop = HEAD_TOP;
   const layout = () => {
@@ -139,6 +152,10 @@ function setup(root) {
       slide.style.transformOrigin = '';
     });
     list.style.rowGap = '';
+    if (holder) {
+      ouins.forEach((el) => section.prepend(el));
+      holder.remove();
+    }
     if (head) {
       head.style.position = '';
       head.style.top = '';
