@@ -33,11 +33,15 @@ function setup(root) {
   // le contenu suivant remontait par-dessus le carrousel épinglé. On enveloppe donc la racine dans un bloc normal.
   // Ce bloc est ce qu'on épingle : il contient aussi l'en-tête de section (titre + texte), qui précède le carrousel, pour que
   // titre, texte et slider restent visibles ensemble. Hauteur = écran ; le carrousel prend la place restante.
+  const outer = document.createElement('div');
+  outer.setAttribute('data-smf-pin-outer', '');
+  outer.style.width = '100%';
   const wrap = document.createElement('div');
   wrap.setAttribute('data-smf-pin-wrap', '');
   wrap.style.cssText = 'width:100%;height:100vh;height:100svh;position:relative;display:flex;flex-direction:column;gap:1.5rem;padding-top:4.5rem;padding-bottom:1.5rem;box-sizing:border-box';
   const head = root.previousElementSibling;
-  root.before(wrap);
+  root.before(outer);
+  outer.append(wrap);
   if (head) wrap.append(head);
   wrap.append(root);
   // Le carrousel remplit la hauteur restante ; les slides sortantes / entrantes sont rognées en haut et en bas (pas sur les côtés)
@@ -159,10 +163,10 @@ function setup(root) {
     root.style.minHeight = '';
     root.style.flex = '';
     root.style.clipPath = '';
-    if (wrap.parentNode) {
-      if (head) wrap.before(head);
-      wrap.before(root);
-      wrap.remove();
+    if (outer.parentNode) {
+      if (head) outer.before(head);
+      outer.before(root);
+      outer.remove();
     }
     root.classList.remove('is-pinned');
     slides.forEach((slide) => slide.classList.remove('is-active'));
