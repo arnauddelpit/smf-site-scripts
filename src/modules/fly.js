@@ -5,9 +5,11 @@
  *
  *  data-smf-fly="astronaut"       hero : de gauche à droite, au chargement ; le blob lumineux (data-smf-fly-blob) l'accompagne
  *  data-smf-fly="astronaut-back"  « Plot twist » : de droite à gauche, quand la section arrive à l'écran. Comme il avance vers la
- *                                 gauche, sa rotation le fait voler sur le dos (pieds en l'air).
+ *                                 gauche, sa rotation le fait voler sur le dos (pieds en l'air). Son blob lumineux
+ *                                 (data-smf-fly-blob dans la section) l'accompagne aussi.
+ * Dans les deux cas, l'astronaute est toujours accompagné de son blob, placé derrière lui.
  *
- * reduced-motion : hero → l'astronaute et le blob restent en place dans la page ; Plot twist → l'astronaute reste masqué.
+ * reduced-motion : hero → l'astronaute et le blob restent en place dans la page ; Plot twist → l'astronaute et son blob restent masqués.
  */
 import { onViewport } from '../utils/viewport.js';
 
@@ -51,7 +53,7 @@ const FLIGHTS = {
     anchorFigma: [3821, 4510],
     rise: 0,
     duration: (W, length) => Math.min(9, Math.max(5, length / 420)),
-    blob: false,
+    blob: true,
     showWhenStatic: false,
     rootMargin: '0px 0px -30% 0px', // le vol part quand le haut de la section est monté à 30 % de l'écran
   },
