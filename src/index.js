@@ -23,7 +23,8 @@ const registry = [
   { name: 'marquee', selector: '[data-smf-marquee]', gsap: true, load: () => import('./modules/marquee.js') },
   { name: 'tooltip', selector: '[data-smf-tooltip]', load: () => import('./modules/tooltip.js') },
   { name: 'count', selector: '[data-smf-count]', gsap: true, load: () => import('./modules/count.js') },
-  { name: 'highlight', selector: '[data-smf-highlight]', gsap: true, load: () => import('./modules/highlight.js') },
+  // Surlignage : classe combo is-draw retirée par des interactions IX3 (Surlignage - titres), transition CSS. Module conservé :
+  // { name: 'highlight', selector: '[data-smf-highlight]', gsap: true, load: () => import('./modules/highlight.js') },
   { name: 'team', selector: '[data-smf-team]', gsap: true, load: () => import('./modules/team.js') },
   { name: 'cursor', selector: '[data-smf-cursor]', gsap: true, load: () => import('./modules/cursor.js') },
   { name: 'video', selector: '[data-smf-case-tile], [data-smf-video-autoplay], [data-smf-video-play]', load: () => import('./modules/video.js') },
