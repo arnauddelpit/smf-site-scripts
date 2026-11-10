@@ -57,7 +57,10 @@ export function init(elements, { gsap, env }) {
     return;
   }
 
-  const pick = (attr) => elements.filter((el) => el.hasAttribute(attr));
+  // Effets passés en interactions IX3 natives (Titres - mots qui montent du masque ; Profondeur -60 … 70) : le code reste
+  // ci-dessous au cas où, il suffit de retirer l'attribut de cette liste pour le réactiver (et supprimer l'interaction).
+  const NATIVE = new Set(['data-smf-split-title', 'data-smf-depth']);
+  const pick = (attr) => (NATIVE.has(attr) ? [] : elements.filter((el) => el.hasAttribute(attr)));
 
   // Titres : mots qui montent du masque
   for (const el of pick('data-smf-split-title')) {
