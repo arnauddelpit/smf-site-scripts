@@ -117,10 +117,13 @@ function setup(root) {
       slide.style.transformOrigin = '50% 0%';
     });
     // temps de lecture : la slide reste seule et nette sur cette distance de scroll avant que la suivante n'apparaisse
-    // (y compris pour la dernière : sans cette marge, la liste se termine avec elle et elle repart dès qu'elle est calée)
-    slides.forEach((slide) => {
-      slide.style.marginBottom = `${Math.round(window.innerHeight * HOLD)}px`;
+    // Dernière slide : une slide sticky ne reste calée que si son conteneur se prolonge sous elle, d'où le padding de la liste
+    // (une marge sur la dernière slide ne suffit pas : elle repartirait dès qu'elle est calée).
+    const hold = `${Math.round(window.innerHeight * HOLD)}px`;
+    slides.forEach((slide, i) => {
+      slide.style.marginBottom = i < slides.length - 1 ? hold : '';
     });
+    list.style.paddingBottom = hold;
     if (dotsNav) dotsNav.style.marginBottom = `-${dotsNav.offsetHeight}px`;
   };
   layout();
@@ -195,6 +198,7 @@ function setup(root) {
       slide.style.transformOrigin = '';
     });
     list.style.rowGap = '';
+    list.style.paddingBottom = '';
     ouinTrigger?.kill();
     ouinTween?.kill();
     ouins.forEach((el) => gsap.set(el, { clearProps: 'transform' }));
