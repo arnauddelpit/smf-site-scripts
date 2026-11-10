@@ -47,6 +47,7 @@ const LOTTIES = {
   'lottie-likes': { src: `${SITE_ASSETS}6af1997726a2402e32b5c58b_smuf%20likes.lottie`, ratio: '175 / 160' },
   'lottie-roi': { src: `${SITE_ASSETS}6af1ab5a9965380aa0967f86_smuf%20roi.lottie`, ratio: '148 / 162' },
   'lottie-cadreur': { src: `${SITE_ASSETS}6af1ab96704eee5b05b5f45d_smuf%20cadreur.lottie`, ratio: '168 / 219' },
+  'lottie-qui-pleure': { src: `${SITE_ASSETS}6af1985b34937b400d9c3e3f_smuf%20qui%20pleure.lottie`, ratio: '187 / 149' },
   'lottie-coeur': { src: `${SITE_ASSETS}6af1985b26a2402e32b559df_smuf%20coeur.lottie`, ratio: '164 / 167' },
 };
 const DOTLOTTIE = 'https://cdn.jsdelivr.net/npm/@lottiefiles/dotlottie-web@0.38.2/+esm';

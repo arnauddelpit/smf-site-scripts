@@ -10,6 +10,8 @@ import { registerPlugins } from '../utils/gsap.js';
 const HEAD_TOP = 72; // px : décalage de l'en-tête sticky (sous la barre de navigation compacte de 60 px)
 const HEAD_GAP = 24; // px : espace entre l'en-tête et les slides
 const SCALE_DOWN = 0.93; // échelle finale de la slide recouverte
+const OUIN_DURATION = 7; // s : traversée de l'écran par chaque « oin »
+const SMUF = { left: 'calc(67.5% - 93px)', feet: 3, width: 187 }; // Smuf qui pleure : position sur la carte (Figma : centre à 67,5 % de la largeur, pieds 3 px sous le bord haut)
 const HOLD = 0.3; // part de la hauteur d'écran où chaque slide reste seule et nette avant que la suivante ne remonte
 
 export function init(elements, { gsap }) {
@@ -63,6 +65,44 @@ function setup(root) {
     ouins.forEach((el) => holder.append(el));
   }
 
+  // Smuf qui pleure (data-smf-needs-smuf) : posé sur le haut de la carte de la première slide (pieds sur la carte, comme dans Figma).
+  const smuf = section ? section.querySelector('[data-smf-needs-smuf]') : null;
+  const firstCard = slides[0].firstElementChild;
+  const smufHome = smuf ? { parent: smuf.parentNode, next: smuf.nextSibling, style: smuf.getAttribute('style') } : null;
+  if (smuf && firstCard) {
+    firstCard.style.position = 'relative';
+    smuf.style.cssText = `position:absolute;left:${SMUF.left};top:auto;right:auto;bottom:calc(100% - ${SMUF.feet}px);width:${SMUF.width}px;z-index:2;pointer-events:none`;
+    firstCard.append(smuf);
+  }
+
+  // « oin » géants : celui du haut traverse l'écran de droite à gauche, celui du bas de gauche à droite, une seule fois, quand
+  // le carrousel arrive dans l'écran. Avant, ils attendent hors écran.
+  const ouinSpan = (el) => {
+    const x = Number(gsap.getProperty(el, 'x')) || 0;
+    const r = el.getBoundingClientRect();
+    return { left: r.left - x, right: r.right - x, width: window.innerWidth };
+  };
+  const ouinEnds = (el) => {
+    const { left, right, width } = ouinSpan(el);
+    const rtl = el.getAttribute('data-smf-ouin') === '1';
+    return rtl ? [width - left, -right] : [-right, width - left];
+  };
+  ouins.forEach((el) => gsap.set(el, { x: ouinEnds(el)[0] }));
+  let ouinTween = null;
+  const ouinTrigger = ouins.length
+    ? ScrollTrigger.create({
+        trigger: root,
+        start: 'top 80%',
+        once: true,
+        onEnter: () => {
+          ouinTween = gsap.to(
+            ouins,
+            { x: (i, el) => ouinEnds(el)[1], duration: OUIN_DURATION, ease: 'none' },
+          );
+        },
+      })
+    : null;
+
   list.style.rowGap = '0px';
   let stickyTop = HEAD_TOP;
   const layout = () => {
@@ -75,8 +115,9 @@ function setup(root) {
       slide.style.transformOrigin = '50% 0%';
     });
     // temps de lecture : la slide reste seule et nette sur cette distance de scroll avant que la suivante n'apparaisse
-    slides.forEach((slide, i) => {
-      slide.style.marginBottom = i < slides.length - 1 ? `${Math.round(window.innerHeight * HOLD)}px` : '';
+    // (y compris pour la dernière : sans cette marge, la liste se termine avec elle et elle repart dès qu'elle est calée)
+    slides.forEach((slide) => {
+      slide.style.marginBottom = `${Math.round(window.innerHeight * HOLD)}px`;
     });
     if (dotsNav) dotsNav.style.marginBottom = `-${dotsNav.offsetHeight}px`;
   };
@@ -152,6 +193,15 @@ function setup(root) {
       slide.style.transformOrigin = '';
     });
     list.style.rowGap = '';
+    ouinTrigger?.kill();
+    ouinTween?.kill();
+    ouins.forEach((el) => gsap.set(el, { clearProps: 'transform' }));
+    if (smuf && smufHome) {
+      if (smufHome.style === null) smuf.removeAttribute('style');
+      else smuf.setAttribute('style', smufHome.style);
+      smufHome.parent.insertBefore(smuf, smufHome.next);
+      if (firstCard) firstCard.style.position = '';
+    }
     if (holder) {
       ouins.forEach((el) => section.prepend(el));
       holder.remove();
