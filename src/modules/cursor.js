@@ -9,12 +9,13 @@ export function init([cursor], { gsap, env }) {
     return;
   }
 
-  const zones = [...document.querySelectorAll('[data-smf-cursor-zone], [data-smf-team]')];
+  // Accueil (équipe en mode filtres) : seule la zone des filtres porte data-smf-cursor-zone ; ailleurs (mode jeu) : les cartes.
+  const zones = [...document.querySelectorAll('[data-smf-cursor-zone], [data-smf-team="game"]')];
   if (!zones.length) return;
 
   cursor.setAttribute('aria-hidden', 'true');
   Object.assign(cursor.style, { position: 'fixed', left: '0', top: '0', pointerEvents: 'none', zIndex: '9999' });
-  gsap.set(cursor, { opacity: 0, xPercent: -20, yPercent: -10 });
+  gsap.set(cursor, { opacity: 0, xPercent: -15, yPercent: -30 }); // la main (≈ 75×59 dans la boîte 96×88) commence juste au-dessus de la pointe du curseur natif
 
   const x = gsap.quickTo(cursor, 'x', { duration: 0.2, ease: 'power3.out' });
   const y = gsap.quickTo(cursor, 'y', { duration: 0.2, ease: 'power3.out' });
