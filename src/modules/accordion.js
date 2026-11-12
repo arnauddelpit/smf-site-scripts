@@ -97,9 +97,14 @@ function open(item, trigger, panel, gsap, env) {
   gsap.killTweensOf(panel);
   gsap.set(panel, { clearProps: 'height,overflow,display,paddingTop,paddingBottom' });
   if (env.reducedMotion) return;
-  const { paddingTop, paddingBottom } = getComputedStyle(panel);
+  // Hauteur finale mesurée en px (et non 'auto') : avec box-sizing border-box, GSAP mesurait 'auto' sans le padding
+  // (déjà ramené à 0), l'animation finissait donc trop courte et le panneau « sautait » au retrait des styles inline.
+  const cs = getComputedStyle(panel);
+  const { paddingTop, paddingBottom } = cs;
+  const full = panel.getBoundingClientRect().height;
+  const target = cs.boxSizing === 'border-box' ? full : full - parseFloat(paddingTop) - parseFloat(paddingBottom);
   gsap.fromTo(panel, { height: 0, paddingTop: 0, paddingBottom: 0, overflow: 'hidden' }, {
-    height: 'auto',
+    height: target,
     paddingTop,
     paddingBottom,
     duration: DURATION,
