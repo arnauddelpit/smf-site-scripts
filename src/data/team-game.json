@@ -1,5 +1,6 @@
 {
-  "_source": "CMS Webflow « Indices du jeu » (21 indices) — export du 2026-11-04. Les membres sont désignés par leur slug (collection Équipe). À régénérer si les indices changent dans le CMS.",
+  "_source": "pages = CMS Webflow « Indices du jeu » (21 indices, export du 2026-11-04) ; teams = champ equipe-dediee des collections Besoins et Secteurs (export du 2026-11-12) ; generic = textes provisoires pour les pages sans indices rédigés (à valider). Les membres sont désignés par leur slug (collection Équipe). À régénérer si le CMS change.",
+  "fallback": "expertises",
   "pages": {
     "agence-ads": [
       { "text": "Ils connaissent le ROAS par cœur, et pas seulement en réunion.", "out": ["mathias", "axel", "vincent", "valerie", "valentin", "camille"] },
@@ -35,6 +36,33 @@
       { "text": "Ils savent ce qu’est un panier abandonné.", "out": ["mathias", "valerie", "julie", "manon", "chloe"] },
       { "text": "Ils lisent leur tableau de bord comme un polar.", "out": ["axel", "vincent", "valentin", "camille"] },
       { "text": "Ils font rimer ROAS et bonne humeur.", "out": ["antoine-p", "lea", "lucas"] }
+    ]
+  },
+  "teams": {
+    "besoins/booster-mes-ventes": ["antoine-g", "hugo", "theo", "juliette"],
+    "besoins/capter-plus-de-leads": ["antoine-g", "juliette", "hugo", "julie"],
+    "besoins/augmenter-mon-trafic": ["antoine-g", "hugo", "juliette", "theo"],
+    "besoins/ameliorer-mon-engagement": ["antoine-p", "julie", "manon", "chloe"],
+    "besoins/gagner-en-visibilite": ["antoine-p", "julie", "lea", "manon"],
+    "secteurs/institutionnel": ["mathias", "valerie", "antoine-p", "juliette"],
+    "secteurs/commerce-et-retail": ["antoine-g", "manon", "antoine-p", "julie"],
+    "secteurs/industrie-et-b2b": ["juliette", "antoine-g", "mathias", "lea"],
+    "secteurs/e-commerce": ["antoine-g", "hugo", "juliette", "theo"],
+    "secteurs/agroalimentaire": ["axel", "valentin", "antoine-g", "lea"],
+    "secteurs/sante": ["lea", "juliette", "vincent", "julie"],
+    "secteurs/loisirs-et-tourisme": ["lea", "julie", "axel", "antoine-p"]
+  },
+  "generic": {
+    "priority": ["valerie", "mathias", "vincent", "camille", "valentin", "axel", "lucas", "chloe", "manon", "julie", "lea", "antoine-p", "juliette", "hugo", "theo", "antoine-g"],
+    "besoins": [
+      "Ils ont déjà croisé votre problème, et ils s’en souviennent avec le sourire.",
+      "Ils ont déjà imaginé la solution pendant que vous lisiez cet indice.",
+      "Ils répondent « on regarde les chiffres » avant même qu’on pose la question."
+    ],
+    "secteurs": [
+      "Ils connaissent votre secteur mieux que vous ne le pensez (c’est gênant).",
+      "Ils ont déjà travaillé pour un client comme vous. Il est revenu.",
+      "Ils savent ce qui fait cliquer dans votre milieu, et ils adorent le prouver."
     ]
   }
 }
