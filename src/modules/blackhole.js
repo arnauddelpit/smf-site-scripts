@@ -238,8 +238,9 @@ export function init([root], { gsap, env }) {
     const displacement = warp.querySelector('feDisplacementMap');
     astronaut.style.filter = `url(#${FILTER_ID})`;
 
-    // Chute en spirale : l'astronaute tourne autour du centre du trou (3 tours, élargissement puis resserrement du rayon,
-    // vu un peu de côté : rayon vertical réduit) tout en rétrécissant ; sa rotation suit le tour.
+    // Chute en spirale : l'astronaute tourne autour du centre du trou (3 tours dans le sens inverse des aiguilles d'une montre,
+    // élargissement puis resserrement du rayon, vu un peu de côté : rayon vertical réduit) tout en rétrécissant ; sa rotation
+    // sur lui-même suit le même sens.
     const h = holeCenter();
     const startRotation = heading;
     const dx0 = pos.x - h.x;
@@ -256,12 +257,12 @@ export function init([root], { gsap, env }) {
       ease: 'power1.in',
       onUpdate: () => {
         const p = spin.p;
-        const angle = a0 + p * Math.PI * 2 * 3;
+        const angle = a0 - p * Math.PI * 2 * 3; // sens inverse des aiguilles d'une montre
         const radius = r0 * (1 - p) + swing * Math.sin(Math.PI * p) * (1 - p * 0.5) * (1 - p);
         gsap.set(astronaut, {
           x: h.x + Math.cos(angle) * radius - size.w / 2,
           y: h.y + Math.sin(angle) * radius * 0.6 - size.h / 2,
-          rotation: startRotation + p * 900,
+          rotation: startRotation - p * 900,
           scale: 1.08 - 1.04 * p ** 1.3,
         });
       },
