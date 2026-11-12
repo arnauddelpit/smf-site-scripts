@@ -4,7 +4,8 @@
  * Bureau : l'astronaute souriant (data-smf-blackhole-face="smile") suit le curseur avec inertie, la tête dans le sens de la
  * trajectoire, en laissant une traînée d'étoiles (comme les vols du hero). Il est déplacé dans <body> en position fixe :
  * il reste visible par-dessus les sections voisines tant que la section du trou noir est à l'écran. Au repos il se tient à
- * son emplacement Figma (clone invisible laissé dans la section).
+ * son emplacement Figma (clone invisible laissé dans la section). La première fois qu'il rejoint le curseur, il arrive depuis
+ * l'angle haut gauche de l'écran.
  * À moins de FEAR_RADIUS du trou noir, son visage est remplacé par celui de l'astronaute qui a peur (face "scared").
  * Dans le trou noir : aspiration (spirale, rétrécissement, distorsion SVG), puis le trou noir grossit jusqu'à remplir tout
  * le viewport (disque noir fixe qui part de l'ellipse), et redirection vers /trou-noir (page à fond noir).
@@ -156,9 +157,16 @@ export function init([root], { gsap, env }) {
   let visible = false;
   let sucked = false;
   let overlay = null;
+  let arrived = false; // la première fois qu'il rejoint le curseur, l'astronaute arrive depuis l'angle haut gauche de l'écran
 
   function tick(time, deltaMs) {
     const dt = Math.min(deltaMs, 64) / 1000 || 0.016;
+    if (!arrived && cursor.moved) {
+      arrived = true;
+      pos.x = -size.w;
+      pos.y = -size.h;
+      heading = 0;
+    }
     const rest = slotCenter();
     const tx = cursor.moved ? cursor.x : rest.x;
     const ty = cursor.moved ? cursor.y : rest.y;
@@ -200,8 +208,11 @@ export function init([root], { gsap, env }) {
     const wobble = near ? Math.sin(time * 38) * 4 : 0;
     gsap.set(astronaut, { x: pos.x - size.w / 2, y: pos.y - size.h / 2, rotation: heading + wobble, scale: near ? 1.08 : 1 });
 
-    // Dans le trou noir (l'ellipse est plate : tolérance verticale plus large)
-    if ((hx / (h.w * 0.4)) ** 2 + (hy / Math.max(h.h, 28)) ** 2 < 1) suck();
+    // Zone de chute (l'ellipse est plate, la tolérance verticale est donc plus large que le trou lui-même). Il faut que l'astronaute
+    // soit dans la zone ET que le curseur la survole (un peu élargie) : un astronaute qui ne fait que traverser pour rejoindre le
+    // curseur (arrivée depuis l'angle de l'écran, mouvement rapide) ne tombe pas.
+    const inZone = (x, y, k) => ((x - h.x) / (h.w * 0.65 * k)) ** 2 + ((y - h.y) / (Math.max(h.h * 3.5, 56) * k)) ** 2 < 1;
+    if (cursor.moved && inZone(pos.x, pos.y, 1) && inZone(cursor.x, cursor.y, 1.35)) suck();
   }
 
   // ── Chute : l'astronaute plonge, puis le trou noir remplit le viewport
@@ -227,11 +238,37 @@ export function init([root], { gsap, env }) {
     const displacement = warp.querySelector('feDisplacementMap');
     astronaut.style.filter = `url(#${FILTER_ID})`;
 
+    // Chute en spirale : l'astronaute tourne autour du centre du trou (3 tours, élargissement puis resserrement du rayon,
+    // vu un peu de côté : rayon vertical réduit) tout en rétrécissant ; sa rotation suit le tour.
     const h = holeCenter();
+    const startRotation = heading;
+    const dx0 = pos.x - h.x;
+    const dy0 = pos.y - h.y;
+    const r0 = Math.hypot(dx0, dy0);
+    const a0 = Math.atan2(dy0, dx0);
+    const swing = Math.max(120, r0 * 1.6); // amplitude de la spirale (px)
+    const FALL = 2.4; // durée de la chute (s)
+    const spin = { p: 0 };
     const tl = gsap.timeline({ onComplete: finish });
-    tl.to(astronaut, { x: h.x - size.w / 2, y: h.y - size.h / 2, rotation: '+=540', scale: 0.04, duration: 1.0, ease: 'power3.in' }, 0);
-    tl.fromTo(displacement, { attr: { scale: 0 } }, { attr: { scale: 90 }, duration: 1.0, ease: 'power2.in' }, 0);
-    tl.fromTo(turbulence, { attr: { baseFrequency: 0.01 } }, { attr: { baseFrequency: 0.06 }, duration: 1.0 }, 0);
+    tl.to(spin, {
+      p: 1,
+      duration: FALL,
+      ease: 'power1.in',
+      onUpdate: () => {
+        const p = spin.p;
+        const angle = a0 + p * Math.PI * 2 * 3;
+        const radius = r0 * (1 - p) + swing * Math.sin(Math.PI * p) * (1 - p * 0.5) * (1 - p);
+        gsap.set(astronaut, {
+          x: h.x + Math.cos(angle) * radius - size.w / 2,
+          y: h.y + Math.sin(angle) * radius * 0.6 - size.h / 2,
+          rotation: startRotation + p * 900,
+          scale: 1.08 - 1.04 * p ** 1.3,
+        });
+      },
+    }, 0);
+    tl.fromTo(displacement, { attr: { scale: 0 } }, { attr: { scale: 90 }, duration: FALL, ease: 'power2.in' }, 0);
+    tl.fromTo(turbulence, { attr: { baseFrequency: 0.01 } }, { attr: { baseFrequency: 0.06 }, duration: FALL }, 0);
+    const GROW_AT = 1.7; // le trou noir ne grossit que lorsque l'astronaute est déjà presque englouti
     // Le trou noir est remplacé par un disque noir fixe, de même forme, qui grossit jusqu'à couvrir tout le viewport.
     tl.add(() => {
       const r = hole.getBoundingClientRect();
@@ -244,9 +281,9 @@ export function init([root], { gsap, env }) {
       hole.style.visibility = 'hidden';
       // échelle pour que l'ellipse couvre les quatre coins du viewport
       const far = [[0, 0], [innerWidth, 0], [0, innerHeight], [innerWidth, innerHeight]].map(([x, y]) => Math.hypot((x - cx) / (r.width / 2), (y - cy) / (r.height / 2)));
-      gsap.to(overlay, { scale: Math.max(...far) * 1.05, duration: 1.15, ease: 'power3.in' });
-    }, 0.55);
-    tl.to({}, { duration: 1.15 }, 0.55);
+      gsap.to(overlay, { scale: Math.max(...far) * 1.05, duration: 1.3, ease: 'power3.in' });
+    }, GROW_AT);
+    tl.to({}, { duration: 1.3 }, GROW_AT);
     tl.to({}, { duration: 0.15 });
   }
 
@@ -286,6 +323,12 @@ export function init([root], { gsap, env }) {
       const rest = slotCenter();
       pos.x = rest.x;
       pos.y = rest.y;
+      if (cursor.moved && !arrived) {
+        // le curseur a déjà bougé avant l'arrivée dans la section : première arrivée depuis l'angle haut gauche
+        arrived = true;
+        pos.x = -size.w;
+        pos.y = -size.h;
+      }
       gsap.set(astronaut, { x: pos.x - size.w / 2, y: pos.y - size.h / 2 });
       gsap.to(astronaut, { autoAlpha: 1, duration: 0.3, overwrite: 'auto' });
       gsap.ticker.add(tick);
