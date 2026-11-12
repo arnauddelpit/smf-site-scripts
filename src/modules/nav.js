@@ -1,126 +1,116 @@
 /**
- * G2-G4 — Nav principale (data-smf-nav) et méga-menus (data-smf-nav-trigger / data-smf-megamenu).
- * États posés sur la nav : .is-compact (> 80 px), .is-hidden (scroll vers le bas), .is-menu-open, .is-mobile-open.
- * Panneau ouvert : .is-open sur [data-smf-megamenu]. Ouverture au survol (80 ms / fermeture 200 ms) et au
- * clic / Entrée / Espace ; Échap ferme. Mobile (≤ 991 px) : bouton data-smf-nav-toggle, pas de survol.
- * Le morphing Expertises ↔ Agence (Flip) n'est pas implémenté : le passage est instantané.
+ * G2-G4 — Nav principale (data-smf-nav) et méga-menus.
+ *
+ * Les méga-menus sont des éléments Popover natifs de Webflow (popover=auto, top layer) ouverts par des <button popovertarget>
+ * (data-smf-nav-trigger) : ouverture / fermeture au clic ou au clavier, clic extérieur, Échap et retour du focus sont gérés par le
+ * navigateur, l'animation d'entrée / de sortie et le voile par le CSS (head du site). Ce module n'ajoute que :
+ *   - l'ouverture au survol (80 ms) / fermeture (200 ms) sur bureau avec souris, le pointeur pouvant passer du bouton au panneau ;
+ *   - le morphing Expertises ↔ Agence : le panneau se transforme (taille et contenu) au lieu de se fermer / rouvrir ;
+ *   - aria-expanded / aria-haspopup / aria-controls sur les boutons ;
+ *   - l'état de la barre : .is-compact (> 80 px de scroll) et .is-hidden (scroll vers le bas, jamais panneau ouvert) ;
+ *   - le menu mobile (≤ 991 px) : bouton data-smf-nav-toggle → .is-mobile-open.
  */
 const COMPACT_AT = 80;
 const HIDE_DELTA = 6;
 
 export function init([nav], { env }) {
-  const triggers = [...nav.querySelectorAll('[data-smf-nav-trigger]')].filter((t) => t.getAttribute('data-smf-nav-trigger'));
-  const panels = [...nav.querySelectorAll('[data-smf-megamenu]')];
+  const triggers = [...nav.querySelectorAll('[data-smf-nav-trigger]')].filter((t) => t.getAttribute('data-smf-nav-trigger') && t.getAttribute('popovertarget'));
   const toggle = nav.querySelector('[data-smf-nav-toggle]');
+  const panelOf = (trigger) => document.getElementById(trigger.getAttribute('popovertarget'));
+  const panels = triggers.map(panelOf).filter(Boolean);
+  const supported = typeof HTMLElement.prototype.showPopover === 'function';
 
-  let current = null;
   let openTimer;
   let closeTimer;
   let lastY = window.scrollY;
 
-  const panelFor = (key) => panels.find((p) => p.getAttribute('data-smf-megamenu') === key);
+  const isDesktop = () => window.innerWidth > 991;
+  const hover = () => isDesktop() && !env.touch;
+  const openPanel = () => panels.find((p) => p.matches(':popover-open'));
 
-  for (const panel of panels) panel.id = panel.id || `smf-megamenu-${panel.getAttribute('data-smf-megamenu')}`;
   for (const t of triggers) {
-    const key = t.getAttribute('data-smf-nav-trigger');
-    t.setAttribute('role', 'button');
-    t.setAttribute('aria-expanded', 'false');
     t.setAttribute('aria-haspopup', 'true');
-    if (t.tabIndex < 0 || !t.hasAttribute('tabindex')) t.tabIndex = 0;
-    const panel = panelFor(key);
+    t.setAttribute('aria-expanded', 'false');
+    const panel = panelOf(t);
     if (panel) t.setAttribute('aria-controls', panel.id);
+  }
+  // aria-expanded suit l'état réel du popover, quelle que soit la façon dont il s'ouvre (clic, survol, clavier, Échap, clic extérieur)
+  for (const panel of panels) {
+    panel.addEventListener('toggle', (event) => {
+      const open = event.newState === 'open';
+      for (const t of triggers) if (panelOf(t) === panel) t.setAttribute('aria-expanded', String(open));
+      if (open) nav.classList.remove('is-hidden');
+    });
   }
 
   // Passage Expertises ↔ Agence : le panneau se transforme (taille et contenu morphés) au lieu de se fermer / rouvrir.
-  function morph(fromPanel, toPanel) {
+  function morph(from, to) {
     const gsap = window.gsap;
-    const from = fromPanel.getBoundingClientRect(); // à mesurer avant de le masquer
-    fromPanel.classList.remove('is-open');
-    toPanel.classList.add('is-open');
-    if (!gsap || env.reducedMotion) return;
-    const to = toPanel.getBoundingClientRect();
-    gsap.killTweensOf([toPanel, ...toPanel.children]);
+    if (!gsap || env.reducedMotion) {
+      to.showPopover();
+      return;
+    }
+    const fromBox = from.firstElementChild;
+    const toBox = to.firstElementChild;
+    const start = fromBox.getBoundingClientRect(); // à mesurer avant que le panneau se ferme
+    // Pas de fondu pendant le morphing : l'ancien panneau disparaît net, le nouveau est tout de suite opaque.
+    from.style.transition = 'none';
+    to.style.transition = 'none';
+    to.showPopover(); // popover=auto : ferme l'autre
+    requestAnimationFrame(() => { from.style.transition = ''; });
+    const end = toBox.getBoundingClientRect();
+    gsap.killTweensOf([toBox, ...toBox.children]);
     gsap.fromTo(
-      toPanel,
-      { height: from.height, width: from.width, overflow: 'hidden' },
-      { height: to.height, width: to.width, duration: 0.4, ease: 'power2.inOut', clearProps: 'height,width,overflow' },
+      toBox,
+      { width: start.width, height: start.height, overflow: 'hidden' },
+      { width: end.width, height: end.height, duration: 0.4, ease: 'power2.inOut', clearProps: 'width,height,overflow', onComplete: () => { to.style.transition = ''; } },
     );
     gsap.fromTo(
-      toPanel.children,
+      toBox.children,
       { opacity: 0, y: 10 },
       { opacity: 1, y: 0, duration: 0.3, delay: 0.15, stagger: 0.04, ease: 'power3.out', clearProps: 'opacity,transform' },
     );
   }
 
-  function setOpen(key) {
-    const previous = current;
-    current = key;
-    const fromPanel = previous && key && previous !== key ? panelFor(previous) : null;
-    const toPanel = fromPanel && panelFor(key);
-    if (fromPanel && toPanel) {
-      morph(fromPanel, toPanel);
-      for (const t of triggers) t.setAttribute('aria-expanded', String(t.getAttribute('data-smf-nav-trigger') === key));
-      nav.classList.add('is-menu-open');
-      nav.classList.remove('is-hidden');
-      return;
-    }
-    for (const p of panels) p.classList.toggle('is-open', p.getAttribute('data-smf-megamenu') === key);
-    for (const t of triggers) t.setAttribute('aria-expanded', String(t.getAttribute('data-smf-nav-trigger') === key));
-    nav.classList.toggle('is-menu-open', Boolean(key));
-    if (key) nav.classList.remove('is-hidden');
+  function show(panel) {
+    if (panel.matches(':popover-open')) return;
+    const other = openPanel();
+    if (other && other !== panel) morph(other, panel);
+    else panel.showPopover();
   }
-
-  const isDesktop = () => window.innerWidth > 991;
-  const scheduleOpen = (key) => {
+  function hide(panel) {
+    if (panel.matches(':popover-open')) panel.hidePopover();
+  }
+  const scheduleOpen = (panel) => {
     clearTimeout(closeTimer);
     clearTimeout(openTimer);
-    openTimer = setTimeout(() => setOpen(key), 80);
+    openTimer = setTimeout(() => show(panel), 80);
   };
-  const scheduleClose = () => {
+  const scheduleClose = (panel) => {
     clearTimeout(openTimer);
     clearTimeout(closeTimer);
-    closeTimer = setTimeout(() => setOpen(null), 200);
+    closeTimer = setTimeout(() => hide(panel), 200);
   };
 
-  for (const t of triggers) {
-    const key = t.getAttribute('data-smf-nav-trigger');
-    t.addEventListener('mouseenter', () => isDesktop() && !env.touch && scheduleOpen(key));
-    t.addEventListener('mouseleave', () => isDesktop() && !env.touch && scheduleClose());
-    t.addEventListener('click', (event) => {
-      // Souris sur desktop : le survol ouvre déjà le panneau, un clic suit le lien (/expertises, /qui-sommes-nous)
-      // au lieu de refermer le panneau qu'on vient d'ouvrir. Tactile, mobile et clavier : bascule.
-      if (isDesktop() && !env.touch && event.detail > 0 && t.getAttribute('href')) return;
-      event.preventDefault();
-      clearTimeout(openTimer);
-      setOpen(current === key ? null : key);
-    });
-    t.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        setOpen(current === key ? null : key);
-      }
-    });
-  }
-  for (const p of panels) {
-    p.addEventListener('mouseenter', () => isDesktop() && !env.touch && clearTimeout(closeTimer));
-    p.addEventListener('mouseleave', () => isDesktop() && !env.touch && scheduleClose());
-  }
-
-  // Clic hors des panneaux (voile) ou Échap : fermeture
-  document.addEventListener('click', (event) => {
-    if (!current) return;
-    if (event.target.closest('[data-smf-megamenu], [data-smf-nav-trigger]')) return;
-    setOpen(null);
-  });
-  document.addEventListener('keydown', (event) => {
-    if (event.key !== 'Escape') return;
-    if (current) {
-      const trigger = triggers.find((t) => t.getAttribute('data-smf-nav-trigger') === current);
-      setOpen(null);
-      trigger?.focus();
+  if (supported) {
+    for (const t of triggers) {
+      const panel = panelOf(t);
+      if (!panel) continue;
+      t.addEventListener('mouseenter', () => hover() && scheduleOpen(panel));
+      t.addEventListener('mouseleave', () => hover() && scheduleClose(panel));
+      panel.addEventListener('mouseenter', () => hover() && clearTimeout(closeTimer));
+      panel.addEventListener('mouseleave', () => hover() && scheduleClose(panel));
+      t.addEventListener('click', (event) => {
+        // Souris sur bureau : le survol a déjà ouvert le panneau, le clic ne doit pas le refermer (bascule native).
+        // Clavier (detail = 0), tactile et mobile : bascule native du popover.
+        if (hover() && event.detail > 0) {
+          event.preventDefault();
+          clearTimeout(openTimer);
+          show(panel);
+        }
+      });
     }
-    if (nav.classList.contains('is-mobile-open')) setMobile(false);
-  });
+  }
 
   // Menu mobile
   function setMobile(open) {
@@ -130,6 +120,9 @@ export function init([nav], { env }) {
   }
   toggle?.setAttribute('aria-expanded', 'false');
   toggle?.addEventListener('click', () => setMobile(!nav.classList.contains('is-mobile-open')));
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && nav.classList.contains('is-mobile-open') && !openPanel()) setMobile(false);
+  });
   window.addEventListener('resize', () => {
     if (isDesktop() && nav.classList.contains('is-mobile-open')) setMobile(false);
   });
@@ -140,7 +133,7 @@ export function init([nav], { env }) {
     nav.classList.toggle('is-compact', y > COMPACT_AT);
     const delta = y - lastY;
     if (Math.abs(delta) >= HIDE_DELTA) {
-      const locked = current || nav.classList.contains('is-mobile-open') || nav.contains(document.activeElement);
+      const locked = openPanel() || nav.classList.contains('is-mobile-open') || nav.contains(document.activeElement);
       nav.classList.toggle('is-hidden', delta > 0 && y > COMPACT_AT * 2 && !locked);
       lastY = y;
     }
