@@ -7,7 +7,8 @@
  *  data-smf-fly="astronaut-back"  « Plot twist » : de droite à gauche, quand la section arrive à l'écran. Comme il avance vers la
  *                                 gauche, sa rotation le fait voler sur le dos (pieds en l'air). Son blob lumineux
  *                                 (data-smf-fly-blob dans la section) l'accompagne aussi.
- * Dans les deux cas, l'astronaute est toujours accompagné de son blob, placé derrière lui.
+ *  data-smf-fly="astronaut-team"  Équipe : de gauche à droite à travers la photo d'équipe (data-smf-fly-anchor), comme dans le hero.
+ * Dans tous les cas, l'astronaute est toujours accompagné de son blob, placé derrière lui.
  *
  * reduced-motion : hero → l'astronaute et le blob restent en place dans la page ; Plot twist → l'astronaute et son blob restent masqués.
  */
@@ -56,6 +57,19 @@ const FLIGHTS = {
     blob: true,
     showWhenStatic: false,
     rootMargin: '0px 0px -30% 0px', // le vol part quand le haut de la section est monté à 30 % de l'écran
+  },
+  // Équipe : part du haut à gauche (au-dessus de la photo, il descend le long du bord), traverse la photo en diagonale
+  // et sort à droite, à hauteur du bas de la photo. Orienté comme dans le hero (de gauche à droite, tête devant).
+  'astronaut-team': {
+    dir: 1,
+    segments: [[[3.99, 7381.59], [54.99, 7656.09], [506.29, 8275.29], [1903.49, 8556.09]]],
+    anchor: '[data-smf-fly-anchor]', // photo d'équipe : Figma 7708 → 8529
+    anchorFigma: [7708, 8529],
+    rise: 0,
+    duration: (W, length) => Math.min(9, Math.max(5, length / 420)),
+    blob: true,
+    showWhenStatic: false,
+    rootMargin: '0px 0px -30% 0px',
   },
 };
 
