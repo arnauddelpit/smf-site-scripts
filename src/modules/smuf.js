@@ -49,6 +49,13 @@ const LOTTIES = {
   'lottie-cadreur': { src: `${SITE_ASSETS}6af1ab96704eee5b05b5f45d_smuf%20cadreur.lottie`, ratio: '168 / 219' },
   'lottie-qui-pleure': { src: `${SITE_ASSETS}6af1985b34937b400d9c3e3f_smuf%20qui%20pleure.lottie`, ratio: '187 / 149' },
   'lottie-coeur': { src: `${SITE_ASSETS}6af1985b26a2402e32b559df_smuf%20coeur.lottie`, ratio: '164 / 167' },
+  // Agence Ads : hero (Smuf + gerbe de paillettes, le Smuf est en bas à droite du cadre), Smuf selfie des études de cas
+  'lottie-paillettes': { src: `${SITE_ASSETS}6af1ac3c6504eafc30052367_smuf%20paillettes.lottie`, ratio: '882 / 706' },
+  'lottie-selfie': { src: `${SITE_ASSETS}6af1985ba32c0bc9b4b493a8_smuf%20selfie.lottie`, ratio: '356 / 310' },
+  'lottie-emu': { src: `${SITE_ASSETS}6af1985bfb9ac805f0132a9b_smuf%20emu.lottie`, ratio: '115 / 137' },
+  'lottie-ninja': { src: `${SITE_ASSETS}6af1abd305c838ac381b9060_smuf%20ninja.lottie`, ratio: '178 / 185' },
+  'lottie-looser': { src: `${SITE_ASSETS}6af198cac6de60a5e19e99d8_smuf%20looser.lottie`, ratio: '215 / 240' },
+  'lottie-fan': { src: `${SITE_ASSETS}6af1989aed84a0f9d5ef1e94_smuf%20fan.lottie`, ratio: '215 / 211' },
 };
 const DOTLOTTIE = 'https://cdn.jsdelivr.net/npm/@lottiefiles/dotlottie-web@0.38.2/+esm';
 
