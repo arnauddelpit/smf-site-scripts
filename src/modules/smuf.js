@@ -111,9 +111,13 @@ async function markupOf(id, { assetBase, smufsUrl }) {
   return load(`${assetBase}${id}.svg`);
 }
 
+/** Smufs statiques remplacés partout par leur Lottie (ex. choix « tablet » du champ CMS « Smuf du hero »). */
+const ALIASES = { tablet: 'lottie-roi' };
+
 export function init(elements, { assetBase, smufsUrl, env }) {
   for (const el of elements) {
-    const id = el.getAttribute('data-smf-smuf');
+    const raw = el.getAttribute('data-smf-smuf');
+    const id = ALIASES[raw] || raw;
     if (!id) continue;
 
     if (LOTTIES[id]) {

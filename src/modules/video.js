@@ -10,7 +10,7 @@ import { onViewport } from '../utils/viewport.js';
 
 const ID = /vimeo\.com\/(?:video\/)?(\d+)(?:\/([a-z0-9]+))?/i;
 
-function playerUrl(url, { background }) {
+export function playerUrl(url, { background }) {
   const match = (url || '').match(ID);
   if (!match) return null;
   const params = new URLSearchParams({ dnt: '1' });
@@ -23,7 +23,7 @@ function playerUrl(url, { background }) {
   return `https://player.vimeo.com/video/${match[1]}?${params}`;
 }
 
-function makeFrame(src, { title, cover }) {
+export function makeFrame(src, { title, cover }) {
   const frame = document.createElement('iframe');
   frame.src = src;
   frame.title = title;
