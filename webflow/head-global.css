@@ -39,25 +39,33 @@ button{font:inherit;color:inherit}
 /* Tag filtre (#2) : état actif piloté par aria-pressed (JS data-smf-filter). Variante Pointillés = w-variant-2f13adeb… */
 .tag[aria-pressed="true"]{background-color:var(--_theme---button--dark--bg);border-color:var(--_theme---button--dark--bg);color:var(--_theme---text--on-dark)}
 .tag.w-variant-2f13adeb-02b4-c7eb-3846-d276d7d89a5d[aria-pressed="true"]{background-color:var(--_theme---button--secondary--bg);border-color:var(--_theme---button--outline);color:var(--_theme---button--outline)}
-/* Logo réseau (#4) : pancarte au survol, au focus clavier, ou .is-open (tap mobile, JS data-smf-tooltip) */
-.network-logo:hover .network-logo_tooltip,.network-logo:focus-visible .network-logo_tooltip,.network-logo.is-open .network-logo_tooltip{display:flex}
-.network-logo:hover,.network-logo:focus-visible,.network-logo.is-open{z-index:10}
-.network-logo:hover .network-logo_image{transform:scale(1.05)}
+/* Infobulles des logos (#4 réseau, #19 client) : le survol (et le tap mobile) est l'interaction IX3 native « Infobulles - logos (survol) » ; IX3 n'a pas de déclencheur focus, d'où ces règles pour le clavier. */
+.network-logo:focus-visible .network-logo_tooltip{display:flex}
+.network-logo:focus-visible{z-index:10}
+.client-logo_info:focus-visible .client-logo_tooltip{display:block}
 /* Smuf (#5) : place réservée avant injection du SVG inline par le JS (ratio = viewBox) */
 [data-smf-smuf]{aspect-ratio:1/1}
 [data-smf-smuf="astronaut-blackhole"]{aspect-ratio:168/144}[data-smf-smuf="astronaut"]{aspect-ratio:298/215}[data-smf-smuf="crying-sign"]{aspect-ratio:115/155}[data-smf-smuf="crying"]{aspect-ratio:103/96}[data-smf-smuf="glitter"]{aspect-ratio:119/131}[data-smf-smuf="hanging"]{aspect-ratio:211/156}[data-smf-smuf="highlighter"]{aspect-ratio:119/158}[data-smf-smuf="ninja-alt"]{aspect-ratio:127/103}[data-smf-smuf="ninja"]{aspect-ratio:148/119}[data-smf-smuf="not-convinced"]{aspect-ratio:67/96}[data-smf-smuf="nr-1"]{aspect-ratio:112/155}[data-smf-smuf="nr-4"]{aspect-ratio:119/144}[data-smf-smuf="nr-5"]{aspect-ratio:125/141}[data-smf-smuf="nr-confetti"]{aspect-ratio:179/164}[data-smf-smuf="photo"]{aspect-ratio:118/141}[data-smf-smuf="pov-wink"]{aspect-ratio:109/122}[data-smf-smuf="qsn-team"]{aspect-ratio:282/161}[data-smf-smuf="qsn-ninja"]{aspect-ratio:148/119}[data-smf-smuf="sm-posting"]{aspect-ratio:101/90}[data-smf-smuf="studio"]{aspect-ratio:115/149}[data-smf-smuf="tablet"]{aspect-ratio:115/116}[data-smf-smuf="team-cursor"]{aspect-ratio:135/124}[data-smf-smuf="under-the-hood"]{aspect-ratio:121/123}[data-smf-smuf="visibility-l"]{aspect-ratio:107/160}[data-smf-smuf="who-sign"]{aspect-ratio:176/220}
 [data-smf-smuf] svg{display:block;width:100%;height:100%;overflow:visible}
-/* Nav principale (#8-#12) : états posés par le JS (data-smf-nav). */
+/* Nav principale (#8-#12) : les méga-menus sont des Popover natifs Webflow (popover=auto, top layer) ouverts par des <button popovertarget> ; le JS (data-smf-nav) n'ajoute que le survol, le morphing et l'état compact. --smf-nav-h = hauteur courante de la barre (le panneau se cale dessous). */
 .nav_item[aria-expanded="true"]{background-color:var(--_theme---background--surface)}
 .nav_item[aria-expanded="true"] .nav_item-chevron{transform:rotate(45deg)}
-.nav .megamenu{display:none}.nav .megamenu.is-open{display:grid}
-.nav.is-menu-open .nav_backdrop{display:block}
+:root{--smf-nav-h:6rem}
+@media (max-width:991px){:root{--smf-nav-h:5.5rem}}
+:root:has(.nav.is-compact){--smf-nav-h:3.75rem}
+.nav .nav_popover{top:calc(var(--smf-nav-h) + .5rem);opacity:0;transform:translateY(-12px);transition:opacity .3s ease,transform .3s ease,display .3s allow-discrete,overlay .3s allow-discrete}
+.nav .nav_popover:popover-open{opacity:1;transform:none}
+@starting-style{.nav .nav_popover:popover-open{opacity:0;transform:translateY(-12px)}}
+.nav .nav_backdrop{opacity:0;transition:opacity .3s ease,display .3s allow-discrete}
+.nav:has(.nav_popover:popover-open) .nav_backdrop{display:block;opacity:1}
+@starting-style{.nav:has(.nav_popover:popover-open) .nav_backdrop{opacity:0}}
 .nav.is-hidden{transform:translateY(-100%)}
+.nav.is-hidden:has(.nav_popover:popover-open){transform:none}
 .nav.is-compact .nav_container{height:3.75rem}
-.nav.is-compact .nav_logo-full{display:none}.nav.is-compact .nav_logo-compact{display:block;width:2.5rem}
+.nav.is-compact .nav_logo-full{width:4.25rem}
 .megamenu-item_service:hover .megamenu-item_arrow,.megamenu-item_agency:hover .megamenu-item_arrow{transform:translateX(4px)}
 @media (max-width:991px){
-.nav_container{height:5.5rem}.nav_logo-full{display:none}.nav_logo-compact{display:block}
+.nav_container{height:5.5rem}
 .nav_menu{display:none}.nav_toggle{display:flex}
 .nav.is-mobile-open .nav_menu{display:flex;flex-direction:column;align-items:stretch;position:fixed;left:0;right:0;top:5.5rem;bottom:0;overflow-y:auto;padding:var(--_layout---padding-global);row-gap:var(--_spacing---space--2);background-color:var(--_theme---background--primary)}
 .nav.is-mobile-open .nav_toggle-line:nth-child(1){transform:translateY(6px) rotate(45deg)}
@@ -77,8 +85,6 @@ button{font:inherit;color:inherit}
 .styleguide_content .consent_modal{margin-top:var(--_spacing---space--6)}
 /* Hero (#16) : ombre shadow-float sur les Pill KPI (ombre portée par le groupe dans Figma). */
 .hero_kpis .kpi-pill{box-shadow:0 23px 52px rgba(167,145,127,.1),0 94px 94px rgba(167,145,127,.09),0 211px 127px rgba(167,145,127,.05)}
-/* Bandeau logos clients (#19) : infobulle au survol / focus du « i », ou .is-open (tap mobile, JS data-smf-tooltip). */
-.client-logo_info:hover .client-logo_tooltip,.client-logo_info:focus-visible .client-logo_tooltip,.client-logo_info.is-open .client-logo_tooltip{display:block}
 /* Cartes expertises (#21) : contour gradient-rainbow (1 px, masqué), flèche et voisines à 50 % au survol / focus. */
 .expertise-card::before{content:"";position:absolute;inset:0;z-index:1;padding:var(--_radius-border---border--width-s);background:linear-gradient(135deg,#AEFF00 28%,#FFAA00 50%,#FF0000 71%,#1500FF 93%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;opacity:0;transition:opacity .3s;pointer-events:none}
 .expertise-card:hover::before,.expertise-card:focus-visible::before{opacity:1}
@@ -118,9 +124,9 @@ button{font:inherit;color:inherit}
 .needs-slider_dot:focus-visible{outline:2px solid var(--_theme---focus--ring);outline-offset:2px;border-radius:999px}
 @media (max-width:767px){.needs-slider_component.w-variant-1baab8d1-fed4-8762-b37c-d428a328ddc0 .needs-slider_list{display:flex}.needs-slider_component.w-variant-1baab8d1-fed4-8762-b37c-d428a328ddc0 .needs-slider_slide{opacity:1;visibility:visible;pointer-events:auto}.needs-slider_component.w-variant-1baab8d1-fed4-8762-b37c-d428a328ddc0 .needs-slider_dots{display:none}}
 @media (max-width:991px){.needs-slider_component.is-pinned .needs-slider_dots,.needs-slider_component.w-variant-1baab8d1-fed4-8762-b37c-d428a328ddc0 .needs-slider_dots{right:calc(-1 * var(--_spacing---space--2))}}
-/* #38 Carte service : surlignage dessiné par ligne (titre inline), cyan par défaut (Ads), lime en variante Social media. JS data-smf-highlight anime background-size (0 → 100 %). */
-.service-card_title{background-image:linear-gradient(to bottom,transparent 29%,var(--_palette---color--accent--cyan) 29%,var(--_palette---color--accent--cyan) 86%,transparent 86%);background-repeat:no-repeat;background-size:100% 100%;-webkit-box-decoration-break:clone;box-decoration-break:clone}
-.service-card_component.w-variant-482c8a78-676b-ce50-1e9e-142fc9d2acf1 .service-card_title{background-image:linear-gradient(to bottom,transparent 29%,var(--_palette---color--accent--lime) 29%,var(--_palette---color--accent--lime) 86%,transparent 86%)}
+/* #38 Carte service : surlignage dessiné par ligne (titre inline), cyan par défaut (Ads), lime en variante Social media. Trait comme Figma : moitié basse des capitales jusqu'à 2 px sous la ligne de base (39 → 83 % de la boîte inline), dépasse à droite via le padding-right natif. L'interaction IX3 « Surlignage - grille services » retire .is-draw carte par carte (background-size 0 → 100 %). */
+.service-card_title{background-image:linear-gradient(to bottom,transparent 39%,var(--_palette---color--accent--cyan) 39%,var(--_palette---color--accent--cyan) 83%,transparent 83%);background-repeat:no-repeat;background-size:100% 100%;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.service-card_component.w-variant-482c8a78-676b-ce50-1e9e-142fc9d2acf1 .service-card_title{background-image:linear-gradient(to bottom,transparent 39%,var(--_palette---color--accent--lime) 39%,var(--_palette---color--accent--lime) 83%,transparent 83%)}
 /* #40 Accordéon item (services) : .is-open posé par le JS data-smf-accordion ; la variante « Ouvert (aperçu) » porte ses propres styles. Fermé = chevron vers le haut, ouvert = vers le bas (Figma). */
 .acc-item.is-open .acc-item_content{display:flex}
 .acc-item.is-open .acc-item_chevron{transform:translateY(-2px) rotate(45deg)}
@@ -130,4 +136,3 @@ button{font:inherit;color:inherit}
 .styleguide_content .megamenu{display:grid}
 /* Texte raturé du titre « Ce que vous pouvez attendre d’un tel bazar dispositif » (pages Besoin). */
 .strike-word{text-decoration:line-through;text-decoration-thickness:.1em;text-decoration-skip-ink:none}
-/* Réalisations : les règles de la grille CMS filtrable sont dans le head de la page Réalisations (voir webflow/head-realisations.css). */
