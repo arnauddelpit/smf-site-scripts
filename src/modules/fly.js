@@ -8,6 +8,7 @@
  *                                 gauche, sa rotation le fait voler sur le dos (pieds en l'air). Son blob lumineux
  *                                 (data-smf-fly-blob dans la section) l'accompagne aussi.
  *  data-smf-fly="astronaut-team"  Équipe : de gauche à droite à travers la photo d'équipe (data-smf-fly-anchor), comme dans le hero.
+ *  data-smf-fly="astronaut-cta"   CTA « Allez on discute » : de droite à gauche (sur le dos, comme Plot twist), avec son blob.
  * Dans tous les cas, l'astronaute est toujours accompagné de son blob, placé derrière lui.
  *
  * reduced-motion : hero → l'astronaute et le blob restent en place dans la page ; Plot twist → l'astronaute et son blob restent masqués.
@@ -67,6 +68,22 @@ const FLIGHTS = {
     anchorFigma: [7708, 8529],
     rise: 0,
     duration: (W, length) => Math.min(9, Math.max(5, length / 420)),
+    blob: true,
+    showWhenStatic: false,
+    rootMargin: '0px 0px -30% 0px',
+  },
+  // CTA « Allez on discute » (juste après l'équipe, d'où l'astronaute sort à droite) : il revient de droite à gauche,
+  // ondule au-dessus du titre et ressort en bas à gauche. Pas de calque Figma : y en % du bloc repère (0 = haut, 100 = bas).
+  'astronaut-cta': {
+    dir: -1,
+    segments: [
+      [[1900, 18], [1520, -6], [1180, 78], [920, 58]],
+      [[920, 58], [640, 38], [330, 86], [10, 96]],
+    ],
+    anchor: '[data-slot="cta3"]',
+    anchorFigma: [0, 100],
+    rise: 0,
+    duration: (W, length) => Math.min(8, Math.max(4.5, length / 420)),
     blob: true,
     showWhenStatic: false,
     rootMargin: '0px 0px -30% 0px',
