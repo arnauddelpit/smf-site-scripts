@@ -56,6 +56,8 @@ const LOTTIES = {
   'lottie-ninja': { src: `${SITE_ASSETS}6af1abd305c838ac381b9060_smuf%20ninja.lottie`, ratio: '178 / 185' },
   'lottie-looser': { src: `${SITE_ASSETS}6af198cac6de60a5e19e99d8_smuf%20looser.lottie`, ratio: '215 / 240' },
   'lottie-fan': { src: `${SITE_ASSETS}6af1989aed84a0f9d5ef1e94_smuf%20fan.lottie`, ratio: '215 / 211' },
+  'lottie-stabilo-jaune': { src: `${SITE_ASSETS}6afdacd2be5fea9375fcf38c_smuf%20stabilo%20jaune.lottie`, ratio: '163 / 182' },
+  'lottie-stabilo-bleu': { src: `${SITE_ASSETS}6afdacd2049b18b3a0fedde9_smuf%20stabilo%20bleu.lottie`, ratio: '173 / 210' },
 };
 const DOTLOTTIE = 'https://cdn.jsdelivr.net/npm/@lottiefiles/dotlottie-web@0.38.2/+esm';
 
