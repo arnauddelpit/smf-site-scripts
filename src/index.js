@@ -21,7 +21,8 @@ const registry = [
   { name: 'nav', selector: '[data-smf-nav]', load: () => import('./modules/nav.js') },
   { name: 'accordion', selector: '[data-smf-accordion]', gsap: true, load: () => import('./modules/accordion.js') },
   { name: 'marquee', selector: '[data-smf-marquee]', gsap: true, load: () => import('./modules/marquee.js') },
-  { name: 'tooltip', selector: '[data-smf-tooltip]', load: () => import('./modules/tooltip.js') },
+  // Infobulles des logos : interaction IX3 native (Infobulles - logos (survol)) + règles :focus-visible du head. Module conservé :
+  // { name: 'tooltip', selector: '[data-smf-tooltip]', load: () => import('./modules/tooltip.js') },
   { name: 'count', selector: '[data-smf-count]', gsap: true, load: () => import('./modules/count.js') },
   // Surlignage : classe combo is-draw retirée par des interactions IX3 (Surlignage - titres), transition CSS. Module conservé :
   // { name: 'highlight', selector: '[data-smf-highlight]', gsap: true, load: () => import('./modules/highlight.js') },
